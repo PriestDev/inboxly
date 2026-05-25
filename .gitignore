@@ -1,0 +1,44 @@
+# Backend
+backend/node_modules/
+backend/.env
+backend/.env.local
+backend/.DS_Store
+backend/npm-debug.log*
+backend/dist/
+
+# Frontend
+frontend/node_modules/
+frontend/.env
+frontend/.env.local
+frontend/build/
+frontend/.DS_Store
+frontend/npm-debug.log*
+
+# WordPress Plugin
+wordpress-plugin/node_modules/
+wordpress-plugin/.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Database
+*.db
+*.sqlite
+
+# Env files
+.env
+.env.*.local
