@@ -49,11 +49,15 @@ router.post('/login', async (req, res) => {
     }
 
     const user = await User.findOne({ email });
+    console.log('Login attempt:', { email, password, userExists: !!user });
+    
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     const isPasswordValid = await user.comparePassword(password);
+    console.log('Password comparison result:', isPasswordValid);
+    
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -65,6 +69,7 @@ router.post('/login', async (req, res) => {
       user: user.toJSON()
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ message: error.message });
   }
 });

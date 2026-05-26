@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { FiUser, FiMail, FiLock, FiAlertCircle } from 'react-icons/fi';
 import { authService } from '../services/api';
 import { useAuthStore } from '../context/authStore';
+import { useThemeStore } from '../context/themeContext';
+import { useNotificationStore } from '../context/notificationContext';
+import ThemeToggle from '../components/ThemeToggle';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
   const setToken = useAuthStore((state) => state.setToken);
   const setUser = useAuthStore((state) => state.setUser);
+  const { isDark } = useThemeStore();
+  const { addNotification } = useNotificationStore();
   const [formData, setFormData] = useState({
     email: '',
     username: '',
@@ -29,7 +35,13 @@ const RegisterPage = () => {
     setError('');
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      const errMsg = 'Passwords do not match';
+      setError(errMsg);
+      addNotification({
+        type: 'error',
+        title: 'Validation error',
+        message: errMsg
+      });
       return;
     }
 
@@ -40,31 +52,76 @@ const RegisterPage = () => {
       const response = await authService.register(data);
       setToken(response.data.token);
       setUser(response.data.user);
+      addNotification({
+        type: 'success',
+        title: 'Welcome!',
+        message: `Account created for ${response.data.user.username}`
+      });
       navigate('/chat');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      const errorMsg = err.response?.data?.message || 'Registration failed';
+      setError(errorMsg);
+      addNotification({
+        type: 'error',
+        title: 'Registration failed',
+        message: errorMsg
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
-          Join WorkNoon
-        </h1>
+    <div className={`min-h-screen flex items-center justify-center p-4 ${
+      isDark
+        ? 'bg-gradient-to-br from-gray-900 to-gray-800'
+        : 'bg-gradient-to-br from-blue-500 to-purple-600'
+    }`}>
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
 
+      <div className={`rounded-lg shadow-2xl p-8 w-full max-w-md animate-slide-in-up ${
+        isDark
+          ? 'bg-gray-800'
+          : 'bg-white'
+      }`}>
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 mb-4">
+            <span className="text-white font-bold text-xl">💬</span>
+          </div>
+          <h1 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Join WorkNoon
+          </h1>
+          <p className={`mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            Create your account today
+          </p>
+        </div>
+
+        {/* Error Alert */}
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
+          <div className={`mb-4 p-4 rounded-lg flex items-start gap-3 ${
+            isDark
+              ? 'bg-red-900 border border-red-700'
+              : 'bg-red-50 border border-red-200'
+          }`}>
+            <FiAlertCircle className={`flex-shrink-0 mt-0.5 ${isDark ? 'text-red-400' : 'text-red-600'}`} />
+            <p className={isDark ? 'text-red-200' : 'text-red-700'}>
+              {error}
+            </p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-2 gap-4 mb-4">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Name Fields */}
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-gray-700 font-semibold mb-2">
+              <label className={`block text-sm font-semibold mb-1 ${
+                isDark ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 First Name
               </label>
               <input
@@ -72,11 +129,18 @@ const RegisterPage = () => {
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="John"
+                className={`w-full px-3 py-2 rounded-lg border ${
+                  isDark
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500'
+                    : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400'
+                }`}
               />
             </div>
             <div>
-              <label className="block text-gray-700 font-semibold mb-2">
+              <label className={`block text-sm font-semibold mb-1 ${
+                isDark ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Last Name
               </label>
               <input
@@ -84,48 +148,86 @@ const RegisterPage = () => {
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Doe"
+                className={`w-full px-3 py-2 rounded-lg border ${
+                  isDark
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500'
+                    : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400'
+                }`}
               />
             </div>
           </div>
 
-          <div className="mb-4">
-            <label className="block text-gray-700 font-semibold mb-2">
-              Email
+          {/* Email Field */}
+          <div>
+            <label className={`block text-sm font-semibold mb-1 ${
+              isDark ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              Email Address
             </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
+            <div className={`flex items-center gap-3 px-4 py-2 rounded-lg border ${
+              isDark
+                ? 'bg-gray-700 border-gray-600'
+                : 'bg-gray-50 border-gray-300'
+            }`}>
+              <FiMail className={isDark ? 'text-gray-400' : 'text-gray-400'} />
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="you@example.com"
+                className={`flex-1 bg-transparent focus:outline-none ${
+                  isDark ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'
+                }`}
+                required
+              />
+            </div>
           </div>
 
-          <div className="mb-4">
-            <label className="block text-gray-700 font-semibold mb-2">
+          {/* Username Field */}
+          <div>
+            <label className={`block text-sm font-semibold mb-1 ${
+              isDark ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Username
             </label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
+            <div className={`flex items-center gap-3 px-4 py-2 rounded-lg border ${
+              isDark
+                ? 'bg-gray-700 border-gray-600'
+                : 'bg-gray-50 border-gray-300'
+            }`}>
+              <FiUser className={isDark ? 'text-gray-400' : 'text-gray-400'} />
+              <input
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="johndoe"
+                className={`flex-1 bg-transparent focus:outline-none ${
+                  isDark ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'
+                }`}
+                required
+              />
+            </div>
           </div>
 
-          <div className="mb-4">
-            <label className="block text-gray-700 font-semibold mb-2">
-              User Type
+          {/* User Type */}
+          <div>
+            <label className={`block text-sm font-semibold mb-1 ${
+              isDark ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              Account Type
             </label>
             <select
               name="userType"
               value={formData.userType}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                isDark
+                  ? 'bg-gray-700 border-gray-600 text-white'
+                  : 'bg-gray-50 border-gray-300 text-gray-900'
+              }`}
             >
               <option value="buyer">Buyer</option>
               <option value="seller">Seller</option>
@@ -134,48 +236,92 @@ const RegisterPage = () => {
             </select>
           </div>
 
-          <div className="mb-4">
-            <label className="block text-gray-700 font-semibold mb-2">
+          {/* Password Field */}
+          <div>
+            <label className={`block text-sm font-semibold mb-1 ${
+              isDark ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Password
             </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
+            <div className={`flex items-center gap-3 px-4 py-2 rounded-lg border ${
+              isDark
+                ? 'bg-gray-700 border-gray-600'
+                : 'bg-gray-50 border-gray-300'
+            }`}>
+              <FiLock className={isDark ? 'text-gray-400' : 'text-gray-400'} />
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                className={`flex-1 bg-transparent focus:outline-none ${
+                  isDark ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'
+                }`}
+                required
+              />
+            </div>
           </div>
 
-          <div className="mb-6">
-            <label className="block text-gray-700 font-semibold mb-2">
+          {/* Confirm Password Field */}
+          <div>
+            <label className={`block text-sm font-semibold mb-1 ${
+              isDark ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Confirm Password
             </label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
+            <div className={`flex items-center gap-3 px-4 py-2 rounded-lg border ${
+              isDark
+                ? 'bg-gray-700 border-gray-600'
+                : 'bg-gray-50 border-gray-300'
+            }`}>
+              <FiLock className={isDark ? 'text-gray-400' : 'text-gray-400'} />
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="••••••••"
+                className={`flex-1 bg-transparent focus:outline-none ${
+                  isDark ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'
+                }`}
+                required
+              />
+            </div>
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition disabled:opacity-50"
+            className={`w-full font-bold py-2 px-4 rounded-lg transition disabled:opacity-50 ${
+              loading
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white'
+            }`}
           >
-            {loading ? 'Registering...' : 'Register'}
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Creating account...
+              </span>
+            ) : (
+              'Create Account'
+            )}
           </button>
         </form>
 
-        <p className="text-center text-gray-600 mt-6">
+        {/* Login Link */}
+        <p className={`text-center mt-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
           Already have an account?{' '}
-          <a href="/login" className="text-blue-500 hover:underline font-semibold">
+          <Link
+            to="/login"
+            className={`font-semibold transition hover:underline ${
+              isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-500 hover:text-blue-600'
+            }`}
+          >
             Login here
-          </a>
+          </Link>
         </p>
       </div>
     </div>

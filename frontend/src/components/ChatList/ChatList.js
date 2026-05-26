@@ -1,50 +1,127 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { FiSearch } from 'react-icons/fi';
+import { useThemeStore } from '../../context/themeContext';
 
 const ChatList = ({ conversations, onSelectConversation, currentConversation }) => {
+  const { isDark } = useThemeStore();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredConversations = conversations.filter((conv) =>
+    conv.title?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const getAvatarInitials = (title) => {
+    return title
+      ?.split(' ')
+      .slice(0, 2)
+      .map((word) => word[0])
+      .join('')
+      .toUpperCase() || '?';
+  };
+
+  const getConversationColor = (id) => {
+    const colors = [
+      'bg-gradient-to-br from-blue-400 to-blue-600',
+      'bg-gradient-to-br from-purple-400 to-purple-600',
+      'bg-gradient-to-br from-pink-400 to-pink-600',
+      'bg-gradient-to-br from-green-400 to-green-600',
+    ];
+    return colors[id?.charCodeAt(0) % colors.length];
+  };
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="text-xl font-bold text-gray-800">Messages</h2>
+    <div className={`flex flex-col h-full ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+      {/* Header */}
+      <div className={`p-4 ${isDark ? 'border-b border-gray-700' : 'border-b border-gray-200'}`}>
+        <h2 className={`text-2xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          Inbox
+        </h2>
+        
+        {/* Search */}
+        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
+          isDark ? 'bg-gray-700' : 'bg-gray-100'
+        }`}>
+          <FiSearch size={18} className={isDark ? 'text-gray-400' : 'text-gray-600'} />
+          <input
+            type="text"
+            placeholder="Search conversations..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={`flex-1 bg-transparent outline-none text-sm ${
+              isDark ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-600'
+            }`}
+          />
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        {conversations.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
-            No conversations yet
+      {/* Conversations List */}
+      <div className={`flex-1 overflow-y-auto ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+        {filteredConversations.length === 0 ? (
+          <div className={`p-8 text-center ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+            <div className="text-4xl mb-2">🔍</div>
+            <p className="text-sm">
+              {searchTerm ? 'No conversations found' : 'No conversations yet'}
+            </p>
           </div>
         ) : (
-          conversations.map((conversation) => (
-            <div
-              key={conversation._id}
-              onClick={() => onSelectConversation(conversation)}
-              className={`p-4 border-b border-gray-100 cursor-pointer transition ${
-                currentConversation?._id === conversation._id
-                  ? 'bg-blue-50 border-l-4 border-blue-500'
-                  : 'hover:bg-gray-50'
-              }`}
-            >
-              <div className="flex justify-between items-start mb-1">
-                <h3 className="font-semibold text-gray-800 text-sm truncate flex-1">
-                  {conversation.title ||
-                    conversation.participants
-                      .map((p) => p.userId?.username)
-                      .join(', ')}
-                </h3>
-                <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
-                  {formatDistanceToNow(new Date(conversation.lastActivityAt), {
-                    addSuffix: true,
-                  })}
-                </span>
-              </div>
+          <div className="space-y-1 p-2">
+            {filteredConversations.map((conversation) => (
+              <div
+                key={conversation._id}
+                onClick={() => onSelectConversation(conversation)}
+                className={`p-3 rounded-lg cursor-pointer transition-all group ${
+                  currentConversation?._id === conversation._id
+                    ? isDark
+                      ? 'bg-blue-600/30 border-l-4 border-blue-500'
+                      : 'bg-blue-50 border-l-4 border-blue-500'
+                    : isDark
+                    ? 'hover:bg-gray-700'
+                    : 'hover:bg-gray-50'
+                }`}
+                role="button"
+                tabIndex={0}
+                aria-selected={currentConversation?._id === conversation._id}
+              >
+                <div className="flex items-start gap-3">
+                  {/* Avatar */}
+                  <div className={`w-12 h-12 rounded-lg ${getConversationColor(conversation._id)} flex items-center justify-center text-white text-sm font-bold flex-shrink-0`}>
+                    {getAvatarInitials(conversation.title)}
+                  </div>
 
-              {conversation.lastMessage && (
-                <p className="text-xs text-gray-600 truncate">
-                  {conversation.lastMessage.content}
-                </p>
-              )}
-            </div>
-          ))
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <h3 className={`font-semibold text-sm truncate ${
+                        isDark ? 'text-white' : 'text-gray-900'
+                      }`}>
+                        {conversation.title}
+                      </h3>
+                      {conversation.unreadCount > 0 && (
+                        <span className="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full flex-shrink-0">
+                          {conversation.unreadCount}
+                        </span>
+                      )}
+                    </div>
+
+                    <p className={`text-xs truncate ${
+                      isDark ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
+                      {conversation.lastMessage?.content || 'No messages yet'}
+                    </p>
+
+                    <p className={`text-xs mt-1 ${
+                      isDark ? 'text-gray-500' : 'text-gray-500'
+                    }`}>
+                      {formatDistanceToNow(new Date(conversation.lastActivityAt), {
+                        addSuffix: true,
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>

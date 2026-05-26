@@ -1,10 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { FiSend, FiSmile } from 'react-icons/fi';
 import { chatService } from '../../services/api';
 import { useChatStore } from '../../context/chatStore';
+import { useThemeStore } from '../../context/themeContext';
+import { useNotificationStore } from '../../context/notificationContext';
 import { formatDistanceToNow } from 'date-fns';
+import { mockMessages } from '../../data/mockData';
 
 const ChatWindow = ({ conversation, socket }) => {
   const { messages, setMessages, typingUsers } = useChatStore();
+  const { isDark } = useThemeStore();
+  const { addNotification } = useNotificationStore();
   const [messageInput, setMessageInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
@@ -31,9 +37,20 @@ const ChatWindow = ({ conversation, socket }) => {
   const loadMessages = async () => {
     try {
       setLoading(true);
-      const response = await chatService.getMessages(conversation._id);
-      setMessages(response.data);
-      chatService.markAsRead(conversation._id);
+      try {
+        const response = await chatService.getMessages(conversation._id);
+        setMessages(response.data);
+        chatService.markAsRead(conversation._id);
+      } catch (err) {
+        // Use mock messages if API fails
+        const conversationMsgs = mockMessages.filter(m => m.conversationId === conversation._id);
+        setMessages(conversationMsgs);
+        addNotification({
+          type: 'info',
+          title: 'Demo Mode',
+          message: 'Showing mock messages'
+        });
+      }
     } catch (error) {
       console.error('Failed to load messages:', error);
     } finally {
@@ -58,8 +75,18 @@ const ChatWindow = ({ conversation, socket }) => {
         messageType: 'text',
       });
       setMessageInput('');
+      addNotification({
+        type: 'success',
+        title: 'Message sent',
+        message: ''
+      });
     } catch (error) {
       console.error('Failed to send message:', error);
+      addNotification({
+        type: 'error',
+        title: 'Failed to send message',
+        message: error.response?.data?.message || 'Please try again'
+      });
     }
   };
 
@@ -78,57 +105,55 @@ const ChatWindow = ({ conversation, socket }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className={`flex items-center justify-center h-full ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading messages...</p>
+          <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Loading messages...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className={`flex flex-col h-full ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 bg-white">
-        <h2 className="text-lg font-semibold text-gray-800">
-          {conversation.title ||
-            conversation.participants
-              .map((p) => p.userId?.username)
-              .join(', ')}
+      <div className={`p-4 ${isDark ? 'bg-gray-800 border-b border-gray-700' : 'bg-white border-b border-gray-200'} sticky top-0 z-10`}>
+        <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          {conversation.title}
         </h2>
-        <p className="text-sm text-gray-500">
+        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
           {conversation.participants.length} participants
         </p>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+      <div className={`flex-1 overflow-y-auto p-4 space-y-4 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
         {messages.length === 0 ? (
-          <div className="text-center text-gray-500 mt-8">
-            <p>No messages yet. Start the conversation!</p>
+          <div className={`text-center mt-8 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+            <div className="text-4xl mb-2">💬</div>
+            <p>Start the conversation!</p>
           </div>
         ) : (
           messages.map((message) => (
             <div
               key={message._id}
-              className="flex items-end space-x-3 animate-fadeIn"
+              className="flex items-end space-x-3 group"
             >
-              {message.senderAvatar && (
-                <img
-                  src={message.senderAvatar}
-                  alt={message.senderName}
-                  className="w-8 h-8 rounded-full"
-                />
-              )}
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold bg-gradient-to-br from-blue-400 to-blue-600 flex-shrink-0`}>
+                {message.senderId?.toString()[0]?.toUpperCase() || '?'}
+              </div>
               <div className="flex-1 max-w-xs">
-                <div className="text-xs text-gray-500 mb-1">
-                  {message.senderName}
+                <div className={`text-xs font-semibold mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  User
                 </div>
-                <div className="bg-white rounded-lg p-3 shadow-sm">
-                  <p className="text-gray-800 break-words">{message.content}</p>
-                  <div className="text-xs text-gray-400 mt-1">
-                    {formatDistanceToNow(new Date(message.createdAt), {
+                <div className={`rounded-lg p-3 shadow-sm ${
+                  isDark
+                    ? 'bg-gray-800 text-white'
+                    : 'bg-white text-gray-900'
+                }`}>
+                  <p className="break-words text-sm">{message.content}</p>
+                  <div className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                    {formatDistanceToNow(new Date(message.timestamp), {
                       addSuffix: true,
                     })}
                   </div>
@@ -140,7 +165,7 @@ const ChatWindow = ({ conversation, socket }) => {
 
         {/* Typing Indicator */}
         {typingUsers.length > 0 && (
-          <div className="flex items-center space-x-2 text-gray-500 text-sm">
+          <div className={`flex items-center space-x-2 text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
             <div className="flex space-x-1">
               <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
               <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></span>
@@ -156,25 +181,46 @@ const ChatWindow = ({ conversation, socket }) => {
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200 bg-white">
-        <div className="flex space-x-2">
-          <input
-            type="text"
-            value={messageInput}
-            onChange={(e) => {
-              setMessageInput(e.target.value);
-              handleTyping();
-            }}
-            placeholder="Type a message..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            type="submit"
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-semibold"
-          >
-            Send
-          </button>
-        </div>
+      <form onSubmit={handleSendMessage} className={`p-4 ${isDark ? 'bg-gray-800 border-t border-gray-700' : 'bg-white border-t border-gray-200'} flex gap-3`}>
+        <input
+          type="text"
+          value={messageInput}
+          onChange={(e) => {
+            setMessageInput(e.target.value);
+            handleTyping();
+          }}
+          placeholder="Type a message..."
+          aria-label="Message input"
+          className={`flex-1 px-4 py-2 rounded-lg border transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            isDark
+              ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500'
+              : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-600'
+          }`}
+        />
+        <button
+          type="button"
+          className={`px-4 py-2 rounded-lg transition ${
+            isDark
+              ? 'hover:bg-gray-700 text-gray-400'
+              : 'hover:bg-gray-100 text-gray-600'
+          }`}
+          aria-label="Add emoji"
+        >
+          <FiSmile size={20} />
+        </button>
+        <button
+          type="submit"
+          disabled={!messageInput.trim()}
+          className={`px-6 py-2 rounded-lg transition font-semibold flex items-center gap-2 ${
+            messageInput.trim()
+              ? 'bg-blue-500 hover:bg-blue-600 text-white'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
+          aria-label="Send message"
+        >
+          <FiSend size={18} />
+          <span className="hidden sm:inline">Send</span>
+        </button>
       </form>
     </div>
   );
