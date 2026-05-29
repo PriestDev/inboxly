@@ -1,6 +1,7 @@
 const { verifyToken } = require('../config/jwt');
 const User = require('../models/User');
 const Message = require('../models/Message');
+const Conversation = require('../models/Conversation');
 
 const socketHandler = (io) => {
   io.on('connection', async (socket) => {
@@ -27,6 +28,8 @@ const socketHandler = (io) => {
 
         io.emit('user_online', { userId: decoded.id });
         console.log(`User ${decoded.id} authenticated`);
+        // Notify the client that authentication succeeded
+        socket.emit('authenticated', { userId: decoded.id });
       } catch (error) {
         console.error('Authentication error:', error);
       }
@@ -60,6 +63,10 @@ const socketHandler = (io) => {
         });
 
         await message.save();
+        await Conversation.findByIdAndUpdate(conversationId, {
+          lastMessage: message._id,
+          lastActivityAt: new Date()
+        });
         await message.populate('senderId', 'username avatar');
 
         // Broadcast to conversation room
@@ -127,13 +134,19 @@ const socketHandler = (io) => {
     // Disconnect
     socket.on('disconnect', async () => {
       if (socket.userId) {
-        await User.findByIdAndUpdate(socket.userId, {
-          status: 'offline',
-          $pull: { socketIds: socket.id },
-          lastActive: new Date()
-        });
+        const updatedUser = await User.findByIdAndUpdate(
+          socket.userId,
+          { $pull: { socketIds: socket.id } },
+          { new: true }
+        );
 
-        io.emit('user_offline', { userId: socket.userId });
+        if (updatedUser && updatedUser.socketIds.length === 0) {
+          await User.findByIdAndUpdate(socket.userId, {
+            status: 'offline',
+            lastActive: new Date()
+          });
+          io.emit('user_offline', { userId: socket.userId });
+        }
       }
       console.log(`Client disconnected: ${socket.id}`);
     });

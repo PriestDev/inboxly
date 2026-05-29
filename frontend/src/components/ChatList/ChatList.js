@@ -70,18 +70,16 @@ const ChatList = ({ conversations, onSelectConversation, currentConversation }) 
               <div
                 key={conversation._id}
                 onClick={() => onSelectConversation(conversation)}
-                className={`p-3 rounded-lg cursor-pointer transition-all group ${
+                className={`p-4 rounded-[28px] cursor-pointer transition-all border ${
                   currentConversation?._id === conversation._id
                     ? isDark
-                      ? 'bg-blue-600/30 border-l-4 border-blue-500'
-                      : 'bg-blue-50 border-l-4 border-blue-500'
+                      ? 'border-blue-500/40 bg-blue-600/20 shadow-[0_0_0_1px_rgba(96,165,250,0.2)]'
+                      : 'border-blue-500/40 bg-blue-50 shadow-[0_12px_30px_-20px_rgba(59,130,246,0.7)]'
                     : isDark
-                    ? 'hover:bg-gray-700'
-                    : 'hover:bg-gray-50'
+                    ? 'border-gray-700 bg-gray-800 hover:border-blue-500/40 hover:bg-gray-700'
+                    : 'border-gray-200 bg-white hover:border-blue-500/40 hover:bg-blue-50'
                 }`}
-                role="button"
                 tabIndex={0}
-                aria-selected={currentConversation?._id === conversation._id}
               >
                 <div className="flex items-start gap-3">
                   {/* Avatar */}

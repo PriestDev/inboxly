@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiMenu, FiX, FiUser, FiSettings } from 'react-icons/fi';
 import { useSocket } from '../hooks/useSocket';
@@ -16,27 +16,29 @@ const ChatPage = () => {
   const navigate = useNavigate();
   const socket = useSocket();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { conversations, setConversations, currentConversation, setCurrentConversation } = useChatStore();
   const { isDark } = useThemeStore();
   const { addNotification } = useNotificationStore();
 
-  useEffect(() => {
-    loadConversations();
-  }, []);
-
-  const loadConversations = async () => {
+  const loadConversations = useCallback(async () => {
     try {
       setLoading(true);
       // Try to load from API, fallback to mock data
       try {
         const response = await chatService.getConversations();
-        setConversations(response.data);
+        const conversations = response.data;
+        setConversations(conversations);
+        if (!currentConversation && conversations.length > 0) {
+          setCurrentConversation(conversations[0]);
+        }
       } catch (err) {
         // Use mock data if API fails
         console.log('Using mock data for conversations');
         setConversations(mockConversations);
+        if (!currentConversation && mockConversations.length > 0) {
+          setCurrentConversation(mockConversations[0]);
+        }
         addNotification({
           type: 'info',
           title: 'Demo Mode',
@@ -46,10 +48,17 @@ const ChatPage = () => {
     } catch (err) {
       console.error(err);
       setConversations(mockConversations);
+      if (!currentConversation && mockConversations.length > 0) {
+        setCurrentConversation(mockConversations[0]);
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentConversation, setConversations, setCurrentConversation, addNotification]);
+
+  useEffect(() => {
+    loadConversations();
+  }, [loadConversations]);
 
   if (loading) {
     return (
@@ -83,36 +92,49 @@ const ChatPage = () => {
         } transition-all duration-300 ${isDark ? 'bg-gray-800 border-r border-gray-700' : 'bg-white border-r border-gray-200'} overflow-hidden flex flex-col`}
       >
         {/* Sidebar Header */}
-        <div className={`${isDark ? 'bg-gray-900 border-b border-gray-700' : 'bg-gray-50 border-b border-gray-200'} p-4`}>
-          <div className="flex items-center justify-between mb-4">
-            <h1 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              WorkNoon
-            </h1>
+        <div className={`${isDark ? 'bg-slate-950 border-b border-gray-800' : 'bg-white border-b border-gray-200'} p-5`}> 
+          <div className="flex items-start justify-between gap-4 mb-5">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] font-semibold text-blue-400">Inbox</p>
+              <h1 className={`mt-3 text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                WorkNoon
+              </h1>
+              <p className={`mt-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                Your polished real-time chat workspace.
+              </p>
+            </div>
             <ThemeToggle />
           </div>
-          <div className="flex gap-2">
+          <div className="space-y-3">
             <button
-              onClick={() => navigate('/profile')}
-              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg transition ${
-                isDark
-                  ? 'bg-gray-700 hover:bg-gray-600 text-white'
-                  : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
-              }`}
+              className="w-full rounded-3xl bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:opacity-95"
             >
-              <FiUser size={18} />
-              <span className="text-sm font-semibold">Profile</span>
+              New conversation
             </button>
-            <button
-              onClick={() => navigate('/admin')}
-              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg transition ${
-                isDark
-                  ? 'bg-gray-700 hover:bg-gray-600 text-white'
-                  : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
-              }`}
-            >
-              <FiSettings size={18} />
-              <span className="text-sm font-semibold">Admin</span>
-            </button>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => navigate('/profile')}
+                className={`flex items-center justify-center gap-2 rounded-3xl px-3 py-3 text-sm font-semibold transition ${
+                  isDark
+                    ? 'bg-gray-800 hover:bg-gray-700 text-white'
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                }`}
+              >
+                <FiUser size={16} />
+                Profile
+              </button>
+              <button
+                onClick={() => navigate('/admin')}
+                className={`flex items-center justify-center gap-2 rounded-3xl px-3 py-3 text-sm font-semibold transition ${
+                  isDark
+                    ? 'bg-gray-800 hover:bg-gray-700 text-white'
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                }`}
+              >
+                <FiSettings size={16} />
+                Admin
+              </button>
+            </div>
           </div>
         </div>
 

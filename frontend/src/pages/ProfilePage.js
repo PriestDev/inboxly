@@ -1,20 +1,63 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FiArrowLeft, FiEdit2, FiLogOut } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../context/authStore';
 import { useThemeStore } from '../context/themeContext';
+import { userService } from '../services/api';
 import ThemeToggle from '../components/ThemeToggle';
 import OfflineIndicator from '../components/OfflineIndicator';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user, logout, setUser } = useAuthStore();
   const { isDark } = useThemeStore();
   const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    avatar: '',
+    userType: 'buyer',
+  });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        avatar: user.avatar || '',
+        userType: user.userType || 'buyer',
+      });
+    }
+  }, [user]);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      const response = await userService.updateProfile(user._id, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        avatar: formData.avatar,
+        userType: formData.userType,
+      });
+      setUser(response.data);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Profile update failed:', error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (!user) {
@@ -99,25 +142,69 @@ const ProfilePage = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              <input
-                type="text"
-                placeholder="First Name"
-                defaultValue={user.firstName}
-                className={`w-full px-3 py-2 rounded-lg border ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'}`}
-              />
-              <input
-                type="text"
-                placeholder="Last Name"
-                defaultValue={user.lastName}
-                className={`w-full px-3 py-2 rounded-lg border ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'}`}
-              />
+              <div>
+                <label className={`block text-sm font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2 rounded-lg border ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                />
+              </div>
+              <div>
+                <label className={`block text-sm font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2 rounded-lg border ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                />
+              </div>
+              <div>
+                <label className={`block text-sm font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Avatar URL
+                </label>
+                <input
+                  type="text"
+                  name="avatar"
+                  value={formData.avatar}
+                  onChange={handleChange}
+                  placeholder="https://..."
+                  className={`w-full px-3 py-2 rounded-lg border ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                />
+              </div>
+              <div>
+                <label className={`block text-sm font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Role
+                </label>
+                <select
+                  name="userType"
+                  value={formData.userType}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2 rounded-lg border ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                >
+                  <option value="buyer">Buyer</option>
+                  <option value="seller">Seller</option>
+                  <option value="designer">Designer</option>
+                  <option value="agent">Support Agent</option>
+                </select>
+              </div>
               <button
-                onClick={() => setIsEditing(false)}
-                className="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition"
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                className={`w-full px-4 py-2 rounded-lg text-white ${saving ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
               >
-                Save Changes
+                {saving ? 'Saving...' : 'Save Changes'}
               </button>
               <button
+                type="button"
                 onClick={() => setIsEditing(false)}
                 className={`w-full px-4 py-2 ${isDark ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} rounded-lg transition`}
               >

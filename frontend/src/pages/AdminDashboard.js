@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { FiArrowLeft, FiUsers, FiMessageSquare, FiActivity, FiTrendingUp } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useThemeStore } from '../context/themeContext';

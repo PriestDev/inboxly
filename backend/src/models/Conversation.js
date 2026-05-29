@@ -9,7 +9,7 @@ const conversationSchema = new mongoose.Schema({
     },
     role: {
       type: String,
-      enum: ['buyer', 'seller', 'designer', 'agent'],
+      enum: ['admin', 'agent', 'customer', 'designer', 'merchant'],
       required: true
     },
     joinedAt: {

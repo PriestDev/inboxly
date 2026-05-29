@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiBell, FiX } from 'react-icons/fi';
+import { FiX } from 'react-icons/fi';
 import { useNotificationStore } from '../context/notificationContext';
 import { useThemeStore } from '../context/themeContext';
 

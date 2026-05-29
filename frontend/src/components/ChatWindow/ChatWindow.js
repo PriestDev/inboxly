@@ -2,12 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import { FiSend, FiSmile } from 'react-icons/fi';
 import { chatService } from '../../services/api';
 import { useChatStore } from '../../context/chatStore';
+import { useAuthStore } from '../../context/authStore';
 import { useThemeStore } from '../../context/themeContext';
 import { useNotificationStore } from '../../context/notificationContext';
 import { formatDistanceToNow } from 'date-fns';
 import { mockMessages } from '../../data/mockData';
 
 const ChatWindow = ({ conversation, socket }) => {
+  const currentUser = useAuthStore((state) => state.user);
   const { messages, setMessages, typingUsers } = useChatStore();
   const { isDark } = useThemeStore();
   const { addNotification } = useNotificationStore();
@@ -18,6 +20,31 @@ const ChatWindow = ({ conversation, socket }) => {
   const typingTimeoutRef = useRef(null);
 
   useEffect(() => {
+    const loadMessages = async () => {
+      try {
+        setLoading(true);
+        try {
+          const response = await chatService.getMessages(conversation._id);
+          setMessages(response.data);
+          chatService.markAsRead(conversation._id);
+        } catch (err) {
+          const conversationMsgs = mockMessages.filter(
+            (m) => m.conversationId === conversation._id
+          );
+          setMessages(conversationMsgs);
+          addNotification({
+            type: 'info',
+            title: 'Demo Mode',
+            message: 'Showing mock messages'
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load messages:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (conversation) {
       loadMessages();
       socket?.emit('join_conversation', conversation._id);
@@ -28,39 +55,15 @@ const ChatWindow = ({ conversation, socket }) => {
         socket?.emit('leave_conversation', conversation._id);
       }
     };
-  }, [conversation, socket]);
+  }, [conversation, socket, setMessages, addNotification]);
 
   useEffect(() => {
+    const scrollToBottom = () => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
     scrollToBottom();
   }, [messages]);
-
-  const loadMessages = async () => {
-    try {
-      setLoading(true);
-      try {
-        const response = await chatService.getMessages(conversation._id);
-        setMessages(response.data);
-        chatService.markAsRead(conversation._id);
-      } catch (err) {
-        // Use mock messages if API fails
-        const conversationMsgs = mockMessages.filter(m => m.conversationId === conversation._id);
-        setMessages(conversationMsgs);
-        addNotification({
-          type: 'info',
-          title: 'Demo Mode',
-          message: 'Showing mock messages'
-        });
-      }
-    } catch (error) {
-      console.error('Failed to load messages:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -70,10 +73,11 @@ const ChatWindow = ({ conversation, socket }) => {
     setIsTyping(false);
 
     try {
-      await chatService.sendMessage(conversation._id, {
+      const response = await chatService.sendMessage(conversation._id, {
         content: messageInput,
         messageType: 'text',
       });
+      setMessages((prevMessages) => [...prevMessages, response.data]);
       setMessageInput('');
       addNotification({
         type: 'success',
@@ -134,33 +138,45 @@ const ChatWindow = ({ conversation, socket }) => {
             <p>Start the conversation!</p>
           </div>
         ) : (
-          messages.map((message) => (
-            <div
-              key={message._id}
-              className="flex items-end space-x-3 group"
-            >
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold bg-gradient-to-br from-blue-400 to-blue-600 flex-shrink-0`}>
-                {message.senderId?.toString()[0]?.toUpperCase() || '?'}
-              </div>
-              <div className="flex-1 max-w-xs">
-                <div className={`text-xs font-semibold mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  User
-                </div>
-                <div className={`rounded-lg p-3 shadow-sm ${
-                  isDark
-                    ? 'bg-gray-800 text-white'
-                    : 'bg-white text-gray-900'
-                }`}>
-                  <p className="break-words text-sm">{message.content}</p>
-                  <div className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
-                    {formatDistanceToNow(new Date(message.timestamp), {
-                      addSuffix: true,
-                    })}
+          messages.map((message) => {
+            const senderId = message.senderId?._id || message.senderId;
+            const isMine = currentUser?._id === senderId;
+            const senderName = message.senderId?.username || message.senderName || 'You';
+
+            return (
+              <div
+                key={message._id}
+                className={`flex items-end ${isMine ? 'justify-end' : 'justify-start'}`}
+              >
+                <div className={`flex items-end gap-3 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${
+                    isMine ? 'bg-gradient-to-br from-green-400 to-teal-500' : 'bg-gradient-to-br from-blue-400 to-blue-600'
+                  } flex-shrink-0`}>
+                    {senderName?.[0]?.toUpperCase() || '?'}
+                  </div>
+                  <div className={`max-w-[22rem] sm:max-w-xl ${isMine ? 'text-right' : 'text-left'}`}>
+                    <div className={`text-xs font-semibold mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {isMine ? 'You' : senderName}
+                    </div>
+                    <div className={`rounded-2xl p-3 shadow-sm ${
+                      isMine
+                        ? 'bg-green-500 text-white'
+                        : isDark
+                        ? 'bg-gray-800 text-white'
+                        : 'bg-white text-gray-900'
+                    }`}>
+                      <p className="break-words text-sm">{message.content}</p>
+                      <div className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {formatDistanceToNow(new Date(message.timestamp || message.createdAt), {
+                          addSuffix: true,
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
 
         {/* Typing Indicator */}

@@ -26,8 +26,8 @@ const userSchema = new mongoose.Schema({
   avatar: String,
   userType: {
     type: String,
-    enum: ['buyer', 'seller', 'designer', 'agent'],
-    default: 'buyer'
+    enum: ['admin', 'agent', 'customer', 'designer', 'merchant'],
+    default: 'customer'
   },
   status: {
     type: String,
