@@ -7,6 +7,7 @@ class Inboxly_Chat_Activator {
 
     public static function activate() {
         // Check PHP version
+        // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
         if (version_compare(PHP_VERSION, '7.4', '<')) {
             wp_die('Inboxly requires PHP 7.4 or higher');
         }
