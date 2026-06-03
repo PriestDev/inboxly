@@ -185,3 +185,64 @@
     font-size: 0.92rem;
     line-height: 1;
 }
+
+/* Onboarding steps styling */
+.inboxly-chat-admin-panel .onboarding-step {
+    position: relative;
+    border-left: 4px solid #2563eb;
+}
+
+.inboxly-chat-admin-panel .onboarding-step .step-number {
+    position: absolute;
+    top: -12px;
+    left: -26px;
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.inboxly-chat-admin-panel .onboarding-step h3 {
+    margin-top: 0.5rem;
+    font-size: 1.25rem;
+    color: #111827;
+}
+
+.inboxly-chat-admin-panel .onboarding-step p {
+    color: #4b5563;
+}
+
+.inboxly-chat-admin-panel .onboarding-step code {
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.4rem;
+    font-size: 0.9rem;
+    color: #78350f;
+}
+
+.inboxly-chat-admin-panel .onboarding-step a {
+    text-decoration: none;
+    color: #2563eb;
+    font-weight: 500;
+}
+
+.inboxly-chat-admin-panel .onboarding-step a:hover {
+    text-decoration: underline;
+}
+
+/* Pro tip section styling */
+.inboxly-chat-admin-panel .panel-card[style*="background:#f0fdf4"] {
+    border-color: #86efac !important;
+}
+
+.inboxly-chat-admin-panel .panel-card[style*="background:#f0fdf4"] h2 {
+    margin-top: 0;
+}
