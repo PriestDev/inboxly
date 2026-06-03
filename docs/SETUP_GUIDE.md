@@ -1,4 +1,4 @@
-# WorkNoon Real-Time Chat System
+# Inboxly Real-Time Chat System
 
 A complete, scalable real-time chat system for e-commerce platforms with Node.js/Express backend, React frontend, and WordPress plugin integration.
 
@@ -63,13 +63,13 @@ The frontend will start on `http://localhost:3000`
 
 ### 3. WordPress Plugin Setup
 
-1. Copy the `worknoon-chat` folder to your WordPress plugins directory:
+1. Copy the `inboxly-chat` folder to your WordPress plugins directory:
    ```
-   wp-content/plugins/worknoon-chat/
+   wp-content/plugins/inboxly-chat/
    ```
 
 2. Activate the plugin in WordPress admin
-3. Go to **WorkNoon Chat Settings** and configure:
+3. Go to **Inboxly Chat Settings** and configure:
    - Backend API URL
    - Notification preferences
    - File upload settings
@@ -199,7 +199,7 @@ PATCH  /api/chats/:conversationId/read        - Mark as read
 git push heroku main
 
 # Or deploy to DigitalOcean with PM2
-pm2 start src/server.js --name "worknoon-chat"
+pm2 start src/server.js --name "inboxly-chat"
 ```
 
 ### Frontend Deployment (Vercel/Netlify)

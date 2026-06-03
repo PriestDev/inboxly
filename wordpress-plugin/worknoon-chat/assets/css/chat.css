@@ -1,6 +1,6 @@
-/* WorkNoon Chat Widget Styles */
+/* Inboxly Widget Styles */
 
-#worknoon-chat-widget {
+#inboxly-chat-widget {
     position: fixed;
     bottom: 20px;
     right: 20px;
@@ -10,12 +10,12 @@
     box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
     background: white;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    z-index: 9999;
+    z-index: 100001;
     overflow: hidden;
 }
 
 /* Collapsed (hidden) state for the floating widget */
-#worknoon-chat-widget.collapsed {
+#inboxly-chat-widget.collapsed {
     transform: translateY(80%);
     opacity: 0;
     pointer-events: none;
@@ -23,14 +23,14 @@
 }
 
 /* Visible when toggled open */
-#worknoon-chat-widget.open {
+#inboxly-chat-widget.open {
     transform: translateY(0);
     opacity: 1;
     pointer-events: auto;
 }
 
 /* Toggle button (chat icon) */
-#worknoon-chat-toggle {
+#inboxly-chat-toggle {
     position: fixed;
     bottom: 28px;
     right: 28px;
@@ -43,88 +43,128 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 6px 18px rgba(0,0,0,0.18);
-    z-index: 10000;
+    z-index: 100002;
     cursor: pointer;
 }
 
-#worknoon-chat-toggle svg {
+#inboxly-chat-toggle svg {
     width: 24px;
     height: 24px;
     fill: white;
 }
 
 /* When widget is open, bring toggle slightly above and change style */
-#worknoon-chat-toggle.open {
+#inboxly-chat-toggle.open {
     transform: translateY(-8px);
 }
 
-#worknoon-chat-shortcode {
+#inboxly-chat-toggle.hidden {
+    display: none !important;
+}
+
+.inboxly-chat-notice {
+    display: none;
+    margin: 0 16px 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: rgba(254, 226, 226, 0.9);
+    color: #991b1b;
+    border: 1px solid rgba(248, 113, 113, 0.45);
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.inboxly-chat-header {
+    position: relative;
+}
+
+.inboxly-chat-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.92);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+}
+
+.inboxly-chat-close:hover {
+    color: #ffffff;
+    opacity: 0.85;
+}
+
+#inboxly-chat-shortcode {
     border-radius: 8px;
     border: 1px solid #e5e7eb;
     background: white;
 }
 
-.worknoon-chat-container {
+.inboxly-chat-container {
     display: flex;
     flex-direction: column;
     height: 100%;
 }
 
-.worknoon-chat-header {
+.inboxly-chat-header {
     padding: 16px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border-radius: 8px 8px 0 0;
 }
 
-.worknoon-chat-header h3 {
+.inboxly-chat-header h3 {
     margin: 0;
     font-size: 18px;
     font-weight: 600;
 }
 
-.worknoon-chat-messages {
+.inboxly-chat-messages {
     flex: 1;
     overflow-y: auto;
     padding: 16px;
     background: #f9fafb;
 }
 
-.worknoon-chat-message {
+.inboxly-chat-message {
     margin-bottom: 12px;
     display: flex;
     gap: 8px;
 }
 
-.worknoon-chat-message.sent {
+.inboxly-chat-message.sent {
     justify-content: flex-end;
 }
 
-.worknoon-chat-message .message-content {
+.inboxly-chat-message .message-content {
     max-width: 70%;
     padding: 8px 12px;
     border-radius: 8px;
     word-wrap: break-word;
 }
 
-.worknoon-chat-message.received .message-content {
+.inboxly-chat-message.received .message-content {
     background: white;
     border: 1px solid #e5e7eb;
 }
 
-.worknoon-chat-message.sent .message-content {
+.inboxly-chat-message.sent .message-content {
     background: #667eea;
     color: white;
 }
 
-.worknoon-chat-input {
+.inboxly-chat-input {
     padding: 12px;
     border-top: 1px solid #e5e7eb;
     display: flex;
     gap: 8px;
 }
 
-.worknoon-chat-input input {
+.inboxly-chat-input input {
     flex: 1;
     padding: 8px 12px;
     border: 1px solid #e5e7eb;
@@ -132,7 +172,7 @@
     font-size: 14px;
 }
 
-.worknoon-chat-input button {
+.inboxly-chat-input button {
     padding: 8px 16px;
     background: #667eea;
     color: white;
@@ -143,12 +183,12 @@
     transition: background 0.3s;
 }
 
-.worknoon-chat-input button:hover {
+.inboxly-chat-input button:hover {
     background: #5568d3;
 }
 
 @media (max-width: 768px) {
-    #worknoon-chat-widget {
+    #inboxly-chat-widget {
         width: 100%;
         height: 100%;
         position: fixed;
@@ -156,7 +196,7 @@
         right: 0;
         border-radius: 0;
     }
-    #worknoon-chat-toggle {
+    #inboxly-chat-toggle {
         right: 18px;
         bottom: 18px;
     }

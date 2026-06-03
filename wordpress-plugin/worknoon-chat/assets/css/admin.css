@@ -1,11 +1,11 @@
 /* Admin Styles */
 
-.worknoon-chat-admin-panel {
+.inboxly-chat-admin-panel {
     margin: 0;
     padding: 0;
 }
 
-.worknoon-chat-admin-panel .page-header {
+.inboxly-chat-admin-panel .page-header {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
@@ -18,13 +18,13 @@
     box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
 }
 
-.worknoon-chat-admin-panel .page-header h1 {
+.inboxly-chat-admin-panel .page-header h1 {
     margin: 0 0 0.35rem;
     font-size: 2rem;
     line-height: 1.1;
 }
 
-.worknoon-chat-admin-panel .page-header .page-eyebrow {
+.inboxly-chat-admin-panel .page-header .page-eyebrow {
     margin: 0 0 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.18em;
@@ -32,26 +32,26 @@
     color: rgba(255, 255, 255, 0.75);
 }
 
-.worknoon-chat-admin-panel .page-header p {
+.inboxly-chat-admin-panel .page-header p {
     margin: 0;
     color: rgba(255, 255, 255, 0.85);
     font-size: 0.98rem;
 }
 
-.worknoon-chat-admin-panel .page-header .page-actions {
+.inboxly-chat-admin-panel .page-header .page-actions {
     display: flex;
     align-items: center;
     gap: 0.75rem;
 }
 
-.worknoon-chat-admin-panel .panel-grid {
+.inboxly-chat-admin-panel .panel-grid {
     display: grid;
     gap: 1.5rem;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     margin-bottom: 1.5rem;
 }
 
-.worknoon-chat-admin-panel .panel-card {
+.inboxly-chat-admin-panel .panel-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 1.25rem;
@@ -59,56 +59,56 @@
     box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
 }
 
-.worknoon-chat-admin-panel .panel-card h2,
-.worknoon-chat-admin-panel .panel-card h3 {
+.inboxly-chat-admin-panel .panel-card h2,
+.inboxly-chat-admin-panel .panel-card h3 {
     margin-top: 0;
     margin-bottom: 1rem;
     color: #111827;
 }
 
-.worknoon-chat-admin-panel .panel-card p,
-.worknoon-chat-admin-panel .panel-card li {
+.inboxly-chat-admin-panel .panel-card p,
+.inboxly-chat-admin-panel .panel-card li {
     color: #4b5563;
     line-height: 1.75;
 }
 
-.worknoon-chat-admin-panel .panel-card ol {
+.inboxly-chat-admin-panel .panel-card ol {
     margin: 0;
     padding-left: 1.2rem;
 }
 
-.worknoon-chat-admin-panel .panel-card .checklist {
+.inboxly-chat-admin-panel .panel-card .checklist {
     list-style: decimal;
     padding-left: 1.15rem;
 }
 
-.worknoon-chat-admin-panel .panel-card .checklist li {
+.inboxly-chat-admin-panel .panel-card .checklist li {
     margin-bottom: 0.9rem;
 }
 
-.worknoon-chat-admin-panel .form-table {
+.inboxly-chat-admin-panel .form-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0 0.75rem;
 }
 
-.worknoon-chat-admin-panel .form-table th,
-.worknoon-chat-admin-panel .form-table td {
+.inboxly-chat-admin-panel .form-table th,
+.inboxly-chat-admin-panel .form-table td {
     vertical-align: top;
     padding: 1.1rem 1rem;
     background: #ffffff;
     border: 1px solid #e5e7eb;
 }
 
-.worknoon-chat-admin-panel .form-table th {
+.inboxly-chat-admin-panel .form-table th {
     width: 220px;
     font-weight: 600;
     color: #111827;
     background: #f9fafb;
 }
 
-.worknoon-chat-admin-panel input[type="text"],
-.worknoon-chat-admin-panel input[type="checkbox"] {
+.inboxly-chat-admin-panel input[type="text"],
+.inboxly-chat-admin-panel input[type="checkbox"] {
     width: 100%;
     padding: 0.9rem 1rem;
     border: 1px solid #d1d5db;
@@ -117,39 +117,39 @@
     color: #111827;
 }
 
-.worknoon-chat-admin-panel input[type="checkbox"] {
+.inboxly-chat-admin-panel input[type="checkbox"] {
     width: auto;
     margin-right: 0.5rem;
 }
 
-.worknoon-chat-admin-panel .description {
+.inboxly-chat-admin-panel .description {
     display: block;
     margin-top: 0.65rem;
     color: #6b7280;
     font-size: 0.92rem;
 }
 
-.worknoon-chat-admin-panel .shortcode-box {
+.inboxly-chat-admin-panel .shortcode-box {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
     align-items: center;
 }
 
-.worknoon-chat-admin-panel .shortcode-box input {
+.inboxly-chat-admin-panel .shortcode-box input {
     flex: 1 1 320px;
     min-width: 240px;
     background: #f8fafc;
     border-color: #cbd5e1;
 }
 
-.worknoon-chat-admin-panel .shortcode-box .button {
+.inboxly-chat-admin-panel .shortcode-box .button {
     flex: 0 0 auto;
     min-width: 100px;
 }
 
-.worknoon-chat-admin-panel code,
-.worknoon-chat-admin-panel .api-url-code {
+.inboxly-chat-admin-panel code,
+.inboxly-chat-admin-panel .api-url-code {
     display: inline-flex;
     padding: 0.6rem 0.85rem;
     border-radius: 0.75rem;
@@ -159,23 +159,23 @@
     color: #0f172a;
 }
 
-.worknoon-chat-admin-panel .button.button-primary {
+.inboxly-chat-admin-panel .button.button-primary {
     background: #2563eb;
     border-color: #2563eb;
     color: #ffffff;
 }
 
-.worknoon-chat-admin-panel .button.button-primary:hover {
+.inboxly-chat-admin-panel .button.button-primary:hover {
     background: #1d4ed8;
     border-color: #1d4ed8;
 }
 
-.worknoon-chat-admin-panel .button.button-secondary {
+.inboxly-chat-admin-panel .button.button-secondary {
     background: #f8fafc;
     border-color: #d1d5db;
     color: #111827;
 }
 
-.worknoon-chat-admin-panel .button.button-secondary:hover {
+.inboxly-chat-admin-panel .button.button-secondary:hover {
     background: #eef2ff;
 }

@@ -10,7 +10,8 @@ import ChatList from '../components/ChatList/ChatList';
 import ChatWindow from '../components/ChatWindow/ChatWindow';
 import ThemeToggle from '../components/ThemeToggle';
 import OfflineIndicator from '../components/OfflineIndicator';
-import { mockConversations } from '../data/mockData';
+import ChatInsightsPanel from '../components/Chat/ChatInsightsPanel';
+import { mockConversations, mockVisitors, mockSupportAgent, mockWidgetSettings, mockEmailNotifications, mockOfflineContact } from '../data/mockData';
 
 const ChatPage = () => {
   const navigate = useNavigate();
@@ -97,7 +98,7 @@ const ChatPage = () => {
             <div>
               <p className="text-xs uppercase tracking-[0.3em] font-semibold text-blue-400">Inbox</p>
               <h1 className={`mt-3 text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                WorkNoon
+                Inboxly
               </h1>
               <p className={`mt-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                 Your polished real-time chat workspace.
@@ -150,22 +151,34 @@ const ChatPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {currentConversation ? (
-          <ChatWindow conversation={currentConversation} socket={socket} />
-        ) : (
-          <div className={`flex items-center justify-center h-full ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
-            <div className="text-center">
-              <div className="mb-4 text-6xl">💬</div>
-              <p className={`text-lg font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
-                Select a conversation to start
-              </p>
-              <p className={isDark ? 'text-gray-500' : 'text-gray-500'}>
-                Choose from your conversations on the left
-              </p>
+      <div className="flex-1 flex flex-col overflow-hidden xl:flex-row">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {currentConversation ? (
+            <ChatWindow conversation={currentConversation} socket={socket} />
+          ) : (
+            <div className={`flex items-center justify-center h-full ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+              <div className="text-center">
+                <div className="mb-4 text-6xl">💬</div>
+                <p className={`text-lg font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
+                  Select a conversation to start
+                </p>
+                <p className={isDark ? 'text-gray-500' : 'text-gray-500'}>
+                  Choose from your conversations on the left
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
+        <div className={`hidden xl:flex xl:w-96 flex-col overflow-y-auto ${isDark ? 'bg-gray-950 border-l border-gray-800' : 'bg-white border-l border-gray-200'}`}>
+          <ChatInsightsPanel
+            visitor={mockVisitors.find((visitor) => visitor.conversationId === currentConversation?._id) || mockVisitors[0]}
+            agent={mockSupportAgent}
+            widgetSettings={mockWidgetSettings}
+            notifications={mockEmailNotifications}
+            offlineContact={mockOfflineContact}
+          />
+        </div>
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ const LandingPage = () => {
               W
             </div>
             <div>
-              <h1 className="text-xl font-semibold tracking-wide">WorkNoon</h1>
+              <h1 className="text-xl font-semibold tracking-wide">Inboxly</h1>
               <p className="text-sm text-slate-400">Real-time chat for modern teams</p>
             </div>
           </div>

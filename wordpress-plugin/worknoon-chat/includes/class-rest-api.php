@@ -3,13 +3,13 @@
  * REST API Class
  */
 
-class Worknoon_Chat_REST_API {
+class Inboxly_Chat_REST_API {
 
     public function __construct() {
     }
 
     public function register_routes() {
-        register_rest_route('worknoon-chat/v1', '/user', array(
+        register_rest_route('inboxly-chat/v1', '/user', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_user_info'),
             'permission_callback' => function () {
@@ -17,7 +17,7 @@ class Worknoon_Chat_REST_API {
             },
         ));
 
-        register_rest_route('worknoon-chat/v1', '/backend-token', array(
+        register_rest_route('inboxly-chat/v1', '/backend-token', array(
             'methods' => 'POST',
             'callback' => array($this, 'get_backend_token'),
             'permission_callback' => function () {
@@ -25,7 +25,7 @@ class Worknoon_Chat_REST_API {
             },
         ));
 
-        register_rest_route('worknoon-chat/v1', '/sync-user', array(
+        register_rest_route('inboxly-chat/v1', '/sync-user', array(
             'methods' => 'POST',
             'callback' => array($this, 'sync_user'),
             'permission_callback' => function () {
@@ -33,13 +33,13 @@ class Worknoon_Chat_REST_API {
             },
         ));
 
-        register_rest_route('worknoon-chat/v1', '/validate-token', array(
+        register_rest_route('inboxly-chat/v1', '/validate-token', array(
             'methods' => 'POST',
             'callback' => array($this, 'validate_token'),
             'permission_callback' => '__return_true',
         ));
 
-        register_rest_route('worknoon-chat/v1', '/chat-session', array(
+        register_rest_route('inboxly-chat/v1', '/chat-session', array(
             array(
                 'methods' => 'GET',
                 'callback' => array($this, 'get_chat_sessions'),
@@ -56,7 +56,7 @@ class Worknoon_Chat_REST_API {
             ),
         ));
 
-        register_rest_route('worknoon-chat/v1', '/chat-session/(?P<id>\d+)', array(
+        register_rest_route('inboxly-chat/v1', '/chat-session/(?P<id>\d+)', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_chat_session'),
             'permission_callback' => function () {
@@ -64,7 +64,7 @@ class Worknoon_Chat_REST_API {
             },
         ));
 
-        register_rest_route('worknoon-chat/v1', '/chat-session/from-product', array(
+        register_rest_route('inboxly-chat/v1', '/chat-session/from-product', array(
             'methods' => 'POST',
             'callback' => array($this, 'create_chat_session_from_product'),
             'permission_callback' => function () {
@@ -72,7 +72,7 @@ class Worknoon_Chat_REST_API {
             },
         ));
 
-        register_rest_route('worknoon-chat/v1', '/chat-session/from-order', array(
+        register_rest_route('inboxly-chat/v1', '/chat-session/from-order', array(
             'methods' => 'POST',
             'callback' => array($this, 'create_chat_session_from_order'),
             'permission_callback' => function () {
@@ -103,9 +103,18 @@ class Worknoon_Chat_REST_API {
             return new WP_Error('not_logged_in', 'User is not logged in', array('status' => 401));
         }
 
-        $api_url = get_option('worknoon_chat_api_url', 'http://localhost:5000');
+        $api_key = get_option('inboxly_chat_api_key', '');
+        if (!$api_key) {
+            return new WP_Error('missing_api_key', 'API key is required for backend calls', array('status' => 500));
+        }
+
+        $api_url = get_option('inboxly_chat_api_url', 'https://api.inboxly.com');
         $response = wp_remote_post($api_url . '/api/auth/wp-login', array(
-            'headers' => array('Content-Type' => 'application/json'),
+            'headers' => array(
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Bearer ' . $api_key,
+                'X-API-Key' => $api_key,
+            ),
             'body' => wp_json_encode(array(
                 'wpUserId' => $current_user->ID,
                 'email' => $current_user->user_email,
@@ -130,9 +139,18 @@ class Worknoon_Chat_REST_API {
             return new WP_Error('not_logged_in', 'User is not logged in', array('status' => 401));
         }
 
-        $api_url = get_option('worknoon_chat_api_url', 'http://localhost:5000');
+        $api_key = get_option('inboxly_chat_api_key', '');
+        if (!$api_key) {
+            return new WP_Error('missing_api_key', 'API key is required for backend calls', array('status' => 500));
+        }
+
+        $api_url = get_option('inboxly_chat_api_url', 'https://api.inboxly.com');
         $response = wp_remote_post($api_url . '/api/auth/wp-login', array(
-            'headers' => array('Content-Type' => 'application/json'),
+            'headers' => array(
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Bearer ' . $api_key,
+                'X-API-Key' => $api_key,
+            ),
             'body' => wp_json_encode(array(
                 'wpUserId' => $current_user->ID,
                 'email' => $current_user->user_email,
@@ -159,9 +177,18 @@ class Worknoon_Chat_REST_API {
             return new WP_Error('missing_token', 'Token is required', array('status' => 400));
         }
 
-        $api_url = get_option('worknoon_chat_api_url', 'http://localhost:5000');
+        $api_key = get_option('inboxly_chat_api_key', '');
+        if (!$api_key) {
+            return new WP_Error('missing_api_key', 'API key is required for backend calls', array('status' => 500));
+        }
+
+        $api_url = get_option('inboxly_chat_api_url', 'https://api.inboxly.com');
         $response = wp_remote_post($api_url . '/api/auth/verify-token', array(
-            'headers' => array('Content-Type' => 'application/json'),
+            'headers' => array(
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Bearer ' . $api_key,
+                'X-API-Key' => $api_key,
+            ),
             'body' => wp_json_encode(array('token' => $token)),
             'timeout' => 20,
         ));
@@ -178,7 +205,7 @@ class Worknoon_Chat_REST_API {
 
         $sessions = get_posts(array(
             'post_type' => 'chat_session',
-            'meta_key' => '_worknoon_chat_user_id',
+            'meta_key' => '_inboxly_chat_user_id',
             'meta_value' => $current_user_id,
             'posts_per_page' => -1,
         ));
@@ -195,7 +222,7 @@ class Worknoon_Chat_REST_API {
         }
 
         $current_user_id = get_current_user_id();
-        $owner_id = intval(get_post_meta($session_id, '_worknoon_chat_user_id', true));
+        $owner_id = intval(get_post_meta($session_id, '_inboxly_chat_user_id', true));
 
         if ($owner_id !== $current_user_id) {
             return new WP_Error('forbidden', 'You do not have access to this chat session', array('status' => 403));
@@ -246,7 +273,7 @@ class Worknoon_Chat_REST_API {
         }
 
         $session_id = $this->create_session_post(array(
-            'title' => sprintf(__('Product Chat: %s', 'worknoon-chat'), $product->get_name()),
+            'title' => sprintf(__('Product Chat: %s', 'inboxly-chat'), $product->get_name()),
             'user_id' => get_current_user_id(),
             'product_ids' => array($product_id),
             'product_names' => array($product->get_name()),
@@ -289,13 +316,13 @@ class Worknoon_Chat_REST_API {
         }
 
         $session_id = $this->create_session_post(array(
-            'title' => sprintf(__('Order #%d Support Chat', 'worknoon-chat'), $order_id),
+            'title' => sprintf(__('Order #%d Support Chat', 'inboxly-chat'), $order_id),
             'user_id' => get_current_user_id(),
             'order_id' => $order_id,
             'product_ids' => $product_ids,
             'product_names' => $product_names,
             'context' => 'order',
-            'context_text' => sprintf(__('Order total: %s', 'worknoon-chat'), wc_price($order->get_total())),
+            'context_text' => sprintf(__('Order total: %s', 'inboxly-chat'), wc_price($order->get_total())),
         ));
 
         if (!$session_id) {
@@ -307,7 +334,7 @@ class Worknoon_Chat_REST_API {
 
     private function create_session_post($args = array()) {
         $defaults = array(
-            'title' => __('Chat Session', 'worknoon-chat'),
+            'title' => __('Chat Session', 'inboxly-chat'),
             'user_id' => get_current_user_id(),
             'order_id' => '',
             'product_ids' => array(),
@@ -330,11 +357,11 @@ class Worknoon_Chat_REST_API {
             return false;
         }
 
-        update_post_meta($post_id, '_worknoon_chat_user_id', intval($args['user_id']));
-        update_post_meta($post_id, '_worknoon_chat_order_id', sanitize_text_field($args['order_id']));
-        update_post_meta($post_id, '_worknoon_chat_product_ids', array_map('intval', (array) $args['product_ids']));
-        update_post_meta($post_id, '_worknoon_chat_product_names', array_map('sanitize_text_field', (array) $args['product_names']));
-        update_post_meta($post_id, '_worknoon_chat_context', sanitize_text_field($args['context']));
+        update_post_meta($post_id, '_inboxly_chat_user_id', intval($args['user_id']));
+        update_post_meta($post_id, '_inboxly_chat_order_id', sanitize_text_field($args['order_id']));
+        update_post_meta($post_id, '_inboxly_chat_product_ids', array_map('intval', (array) $args['product_ids']));
+        update_post_meta($post_id, '_inboxly_chat_product_names', array_map('sanitize_text_field', (array) $args['product_names']));
+        update_post_meta($post_id, '_inboxly_chat_context', sanitize_text_field($args['context']));
 
         return $post_id;
     }
@@ -345,10 +372,10 @@ class Worknoon_Chat_REST_API {
             'title' => get_the_title($session->ID),
             'content' => apply_filters('the_content', $session->post_content),
             'status' => $session->post_status,
-            'order_id' => intval(get_post_meta($session->ID, '_worknoon_chat_order_id', true)),
-            'product_ids' => (array) get_post_meta($session->ID, '_worknoon_chat_product_ids', true),
-            'product_names' => (array) get_post_meta($session->ID, '_worknoon_chat_product_names', true),
-            'context' => get_post_meta($session->ID, '_worknoon_chat_context', true),
+            'order_id' => intval(get_post_meta($session->ID, '_inboxly_chat_order_id', true)),
+            'product_ids' => (array) get_post_meta($session->ID, '_inboxly_chat_product_ids', true),
+            'product_names' => (array) get_post_meta($session->ID, '_inboxly_chat_product_names', true),
+            'context' => get_post_meta($session->ID, '_inboxly_chat_context', true),
             'created_at' => get_post_field('post_date', $session->ID),
         );
     }

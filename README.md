@@ -1,11 +1,11 @@
 # Project Root
 
-This directory contains the complete WorkNoon Chat System project.
+This directory contains the complete Inboxly Chat System project.
 
 ## Folder Structure
 
 ```
-worknoon_remote/
+inboxly_remote/
 ├── backend/              - Node.js/Express backend
 ├── frontend/             - React frontend
 ├── wordpress-plugin/     - WordPress plugin
@@ -31,7 +31,7 @@ npm start
 ```
 
 ### 3. WordPress Plugin
-- Copy `wordpress-plugin/worknoon-chat` to `wp-content/plugins/`
+- Copy `wordpress-plugin/inboxly-chat` to `wp-content/plugins/`
 - Activate in WordPress admin
 
 ## System Requirements
@@ -51,7 +51,7 @@ npm start
 
 - [Backend README](./backend/README.md)
 - [Frontend README](./frontend/README.md)
-- [WordPress Plugin README](./wordpress-plugin/worknoon-chat/README.md)
+- [WordPress Plugin README](./wordpress-plugin/inboxly-chat/README.md)
 - [Full Setup Guide](./docs/SETUP_GUIDE.md)
 
 ## Support

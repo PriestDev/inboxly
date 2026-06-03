@@ -1,5 +1,5 @@
 {
-  "name": "worknoon-chat-backend",
+  "name": "inboxly-chat-backend",
   "version": "1.0.0",
   "description": "Real-time chat system for e-commerce platform",
   "main": "src/server.js",

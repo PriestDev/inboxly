@@ -17,7 +17,7 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 const server = http.createServer(app);
-const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || [
+const defaultOrigins = [
   'http://localhost:3000',
   'http://localhost:5000',
   'http://localhost:4000',
@@ -26,6 +26,10 @@ const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || [
   'http://127.0.0.1:5000',
   'http://127.0.0.1:4000'
 ];
+const envOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim()).filter(Boolean)
+  : [];
+const allowedOrigins = Array.from(new Set([...defaultOrigins, ...envOrigins]));
 
 const io = socketIo(server, {
   cors: {
@@ -52,7 +56,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/worknoon_chat')
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/inboxly_chat')
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.log('MongoDB connection error:', err));
 

@@ -1,5 +1,5 @@
 {
-  "name": "worknoon-chat-frontend",
+  "name": "inboxly-chat-frontend",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -16,15 +16,13 @@
     "zustand": "^4.4.1"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.1.4",
-    "@testing-library/react": "^14.0.0",
+    
     "react-scripts": "^5.0.1",
     "web-vitals": "^3.4.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

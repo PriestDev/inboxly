@@ -150,6 +150,104 @@ export const mockUsers = [
   }
 ];
 
+export const mockVisitors = [
+  {
+    id: 'visitor1',
+    conversationId: '3',
+    name: 'Jamie Cole',
+    email: 'jamie.cole@mail.com',
+    company: 'BrightShop',
+    location: 'San Francisco, CA',
+    browser: 'Chrome',
+    device: 'MacBook Air',
+    page: '/product/eco-bottle',
+    status: 'Active',
+    duration: '3m ago',
+    score: '88%',
+  },
+  {
+    id: 'visitor2',
+    conversationId: '2',
+    name: 'Nina Patel',
+    email: 'nina.patel@mail.com',
+    company: 'StudioLuxe',
+    location: 'London, UK',
+    browser: 'Safari',
+    device: 'iPhone',
+    page: '/support',
+    status: 'Waiting',
+    duration: '12m ago',
+    score: '95%',
+  },
+  {
+    id: 'visitor3',
+    conversationId: '1',
+    name: 'Alex Wong',
+    email: 'alex.wong@mail.com',
+    company: 'MarketFlow',
+    location: 'Toronto, Canada',
+    browser: 'Edge',
+    device: 'Windows Laptop',
+    page: '/checkout',
+    status: 'Offline',
+    duration: '1h ago',
+    score: '74%',
+  }
+];
+
+export const mockSupportAgent = {
+  _id: 'agent1',
+  name: 'Megan Doe',
+  title: 'Customer Success Lead',
+  email: 'megan@inboxly.com',
+  status: 'Online',
+  tagline: 'Your single point of contact for every customer request.',
+  responseTime: '1 min avg',
+  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Megan',
+};
+
+export const mockWidgetSettings = {
+  title: 'Live chat support',
+  welcomeMessage: 'Hi there! Ask me anything about orders, pricing, or product details.',
+  position: 'bottom-right',
+  primaryColor: '#0b74f9',
+  secondaryColor: '#6d28d9',
+  showAvatar: true,
+  offlineText: 'We’re offline now — leave a message and we’ll email you back shortly.',
+  buttonText: 'Open chat',
+};
+
+export const mockEmailNotifications = [
+  {
+    id: 'email1',
+    title: 'New chat message from Jamie',
+    subtitle: 'Notification sent to support@inboxly.com',
+    status: 'Delivered',
+    timestamp: '2 min ago',
+  },
+  {
+    id: 'email2',
+    title: 'Offline form inquiry received',
+    subtitle: 'Captured email sent to agents',
+    status: 'Queued',
+    timestamp: '15 min ago',
+  },
+  {
+    id: 'email3',
+    title: 'Agent assignment updated',
+    subtitle: 'Single support agent engaged',
+    status: 'Sent',
+    timestamp: '40 min ago',
+  }
+];
+
+export const mockOfflineContact = {
+  headline: 'Offline contact form active',
+  description: 'When your team is away, this form captures visitor requests and sends them to email automatically.',
+  submitLabel: 'Send message',
+  fields: ['Name', 'Email', 'Message'],
+};
+
 export const mockAdminStats = {
   totalUsers: 1248,
   activeUsers: 342,

@@ -1,4 +1,4 @@
-# WorkNoon Chat Frontend
+# Inboxly Chat Frontend
 
 React-based real-time chat interface for the e-commerce platform.
 

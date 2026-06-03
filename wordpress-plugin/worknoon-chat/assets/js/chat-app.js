@@ -3,14 +3,14 @@
 (function() {
     'use strict';
 
-    class WorknoonChatWidget {
+    class InboxlyChatWidget {
         constructor() {
             this.socket = null;
             this.token = null;
             this.conversationId = null;
-            this.userId = window.WorknoonChat.userId;
-            this.apiUrl = window.WorknoonChat.apiUrl;
-            this.pageContext = window.WorknoonChat.pageContext || { type: 'general', data: {} };
+            this.userId = window.InboxlyChat.userId;
+            this.apiUrl = window.InboxlyChat.apiUrl;
+            this.pageContext = window.InboxlyChat.pageContext || { type: 'general', data: {} };
             this.init();
         }
 
@@ -21,12 +21,12 @@
         }
 
         renderChatInterface() {
-            const shortcodeContainer = document.querySelector('#worknoon-chat-shortcode');
-            const widgetContainer = document.querySelector('#worknoon-chat-widget');
+            const shortcodeContainer = document.querySelector('#inboxly-chat-shortcode');
+            const widgetContainer = document.querySelector('#inboxly-chat-widget');
             const container = shortcodeContainer || widgetContainer;
 
             if (!container) {
-                console.warn('Worknoon Chat container not found');
+                console.warn('Inboxly container not found');
                 return;
             }
 
@@ -35,12 +35,14 @@
             }
 
             container.innerHTML = `
-                <div class="worknoon-chat-container">
-                    <div class="worknoon-chat-header">
-                        <h3>${window.WorknoonChat.pageContext.type === 'product' ? 'Product Support Chat' : window.WorknoonChat.pageContext.type === 'order' ? 'Order Support Chat' : 'Worknoon Chat'}</h3>
+                <div class="inboxly-chat-container">
+                    <div class="inboxly-chat-header">
+                        <h3>${window.InboxlyChat.pageContext.type === 'product' ? 'Product Support Chat' : window.InboxlyChat.pageContext.type === 'order' ? 'Order Support Chat' : 'Inboxly'}</h3>
+                        <button class="inboxly-chat-close" type="button" aria-label="Close chat">&times;</button>
                     </div>
-                    <div class="worknoon-chat-messages"></div>
-                    <div class="worknoon-chat-input">
+                    <div class="inboxly-chat-notice" role="status" aria-live="polite"></div>
+                    <div class="inboxly-chat-messages"></div>
+                    <div class="inboxly-chat-input">
                         <input type="text" placeholder="Type your message..." />
                         <button type="button">Send</button>
                     </div>
@@ -53,9 +55,9 @@
                 container.classList.add('collapsed');
 
                 // create toggle button if not exists
-                if (!document.querySelector('#worknoon-chat-toggle')) {
+                if (!document.querySelector('#inboxly-chat-toggle')) {
                     const toggle = document.createElement('div');
-                    toggle.id = 'worknoon-chat-toggle';
+                    toggle.id = 'inboxly-chat-toggle';
                     toggle.setAttribute('title', 'Open chat');
                     toggle.innerHTML = `
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -72,17 +74,35 @@
                             container.classList.add('open');
                             toggle.classList.add('open');
                             toggle.setAttribute('title', 'Close chat');
-                            // focus input
-                            const input = container.querySelector('.worknoon-chat-input input');
+                            const input = container.querySelector('.inboxly-chat-input input');
                             input && input.focus();
+                            this.clearError();
                         } else {
                             container.classList.add('collapsed');
                             container.classList.remove('open');
                             toggle.classList.remove('open');
                             toggle.setAttribute('title', 'Open chat');
                         }
+                        this.updateToggleVisibility();
                     });
                 }
+
+                const closeButton = container.querySelector('.inboxly-chat-close');
+                if (closeButton) {
+                    closeButton.addEventListener('click', () => {
+                        container.classList.add('collapsed');
+                        container.classList.remove('open');
+                        const toggle = document.querySelector('#inboxly-chat-toggle');
+                        if (toggle) {
+                            toggle.classList.remove('open');
+                            toggle.setAttribute('title', 'Open chat');
+                        }
+                        this.updateToggleVisibility();
+                    });
+                }
+
+                this.updateToggleVisibility();
+                this.observeModalState();
             }
         }
 
@@ -109,15 +129,55 @@
 
             this.socket.on('error', (error) => {
                 console.error('Chat error:', error);
+                this.showError('Chat socket error. Please check the backend connection.');
             });
         }
 
+        updateToggleVisibility() {
+            const toggle = document.querySelector('#inboxly-chat-toggle');
+            if (!toggle) return;
+
+            const widget = document.querySelector('#inboxly-chat-widget');
+            const isWidgetOpen = widget && widget.classList.contains('open');
+
+            const modalElements = [...document.querySelectorAll('#modal, .modal')];
+            const isModalOpen = modalElements.some(el => {
+                const style = window.getComputedStyle(el);
+                return el.classList.contains('open') || el.classList.contains('show') || (style.display !== 'none' && style.visibility !== 'hidden' && el.offsetParent !== null);
+            });
+
+            toggle.style.display = (isModalOpen || isWidgetOpen) ? 'none' : 'flex';
+        }
+
+        showError(message) {
+            const notice = document.querySelector('.inboxly-chat-notice');
+            if (!notice) return;
+
+            notice.textContent = message;
+            notice.style.display = 'block';
+        }
+
+        clearError() {
+            const notice = document.querySelector('.inboxly-chat-notice');
+            if (!notice) return;
+
+            notice.textContent = '';
+            notice.style.display = 'none';
+        }
+
+        observeModalState() {
+            if (!window.MutationObserver) return;
+            const observer = new MutationObserver(() => this.updateToggleVisibility());
+            observer.observe(document.body, { attributes: true, childList: true, subtree: true });
+            this.modalObserver = observer;
+        }
+
         authenticate() {
-            fetch('/wp-json/worknoon-chat/v1/backend-token', {
+            fetch('/wp-json/inboxly-chat/v1/backend-token', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-WP-Nonce': window.WorknoonChat.nonce,
+                    'X-WP-Nonce': window.InboxlyChat.nonce,
                 },
                 credentials: 'same-origin',
             })
@@ -131,7 +191,10 @@
                 this.socket.emit('authenticate', this.token);
                 this.initializeContext();
             })
-            .catch(error => console.error('Authentication failed:', error));
+            .catch(error => {
+                console.error('Authentication failed:', error);
+                this.showError('Cannot connect to chat backend. Please check the backend URL and try again.');
+            });
         }
 
         initializeContext() {
@@ -145,11 +208,11 @@
         }
 
         createProductChatSession(productId, productName) {
-            fetch('/wp-json/worknoon-chat/v1/chat-session/from-product', {
+            fetch('/wp-json/inboxly-chat/v1/chat-session/from-product', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-WP-Nonce': window.WorknoonChat.nonce,
+                    'X-WP-Nonce': window.InboxlyChat.nonce,
                 },
                 credentials: 'same-origin',
                 body: JSON.stringify({ product_id: productId }),
@@ -170,11 +233,11 @@
         }
 
         createOrderChatSession(orderId) {
-            fetch('/wp-json/worknoon-chat/v1/chat-session/from-order', {
+            fetch('/wp-json/inboxly-chat/v1/chat-session/from-order', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-WP-Nonce': window.WorknoonChat.nonce,
+                    'X-WP-Nonce': window.InboxlyChat.nonce,
                 },
                 credentials: 'same-origin',
                 body: JSON.stringify({ order_id: orderId }),
@@ -229,12 +292,13 @@
         }
 
         attachEventListeners() {
-            const inputElement = document.querySelector('.worknoon-chat-input input');
-            const sendButton = document.querySelector('.worknoon-chat-input button');
+            const inputElement = document.querySelector('.inboxly-chat-input input');
+            const sendButton = document.querySelector('.inboxly-chat-input button');
 
             if (sendButton) {
                 sendButton.addEventListener('click', async () => {
                     if (!inputElement) return;
+                    this.clearError();
                     await this.sendMessage(inputElement.value);
                     inputElement.value = '';
                 });
@@ -243,6 +307,7 @@
             if (inputElement) {
                 inputElement.addEventListener('keypress', async (e) => {
                     if (e.key === 'Enter') {
+                        this.clearError();
                         await this.sendMessage(inputElement.value);
                         inputElement.value = '';
                     }
@@ -261,6 +326,7 @@
                     await this.createBackendConversation({ title, subject, type: this.pageContext.type || 'general' });
                 } catch (err) {
                     console.error('Failed to create conversation before sending message:', err);
+                    this.showError('Unable to start chat conversation. Please check the backend URL and try again.');
                     return;
                 }
             }
@@ -270,7 +336,7 @@
                 _id: `tmp_${Date.now()}`,
                 conversationId: this.conversationId,
                 senderId: this.userId,
-                senderName: window.WorknoonChat.userName || '',
+                senderName: window.InboxlyChat.userName || '',
                 content,
                 messageType: 'text',
                 createdAt: new Date().toISOString()
@@ -297,22 +363,27 @@
                         body: JSON.stringify({ content, messageType: 'text' })
                     });
 
+                    if (!res.ok) {
+                        throw new Error(`Backend returned ${res.status}`);
+                    }
+
                     const data = await res.json();
                     console.log('REST message send response:', data);
                 } catch (err) {
                     console.error('Failed to send message via REST fallback:', err);
+                    this.showError('Unable to send message. Please check the backend URL and try again.');
                 }
             }
         }
 
         displayMessage(message) {
-            const messagesContainer = document.querySelector('.worknoon-chat-messages');
+            const messagesContainer = document.querySelector('.inboxly-chat-messages');
             if (!messagesContainer) return;
 
             const senderId = (typeof message.senderId === 'object' && message.senderId) ? (message.senderId._id || message.senderId.id || message.senderId) : message.senderId;
 
             const messageElement = document.createElement('div');
-            messageElement.className = 'worknoon-chat-message ' + (senderId === this.userId ? 'sent' : 'received');
+            messageElement.className = 'inboxly-chat-message ' + (senderId === this.userId ? 'sent' : 'received');
             messageElement.innerHTML = `<div class="message-content">${message.content}</div>`;
             messagesContainer.appendChild(messageElement);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -322,13 +393,13 @@
     // Initialize widget when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
-            if (window.WorknoonChat && window.WorknoonChat.isLoggedIn) {
-                new WorknoonChatWidget();
+            if (window.InboxlyChat && window.InboxlyChat.isLoggedIn) {
+                new InboxlyChatWidget();
             }
         });
     } else {
-        if (window.WorknoonChat && window.WorknoonChat.isLoggedIn) {
-            new WorknoonChatWidget();
+        if (window.InboxlyChat && window.InboxlyChat.isLoggedIn) {
+            new InboxlyChatWidget();
         }
     }
 })();

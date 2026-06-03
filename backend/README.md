@@ -1,4 +1,4 @@
-# WorkNoon Chat Backend
+# Inboxly Chat Backend
 
 Real-time chat backend for the e-commerce chat system.
 

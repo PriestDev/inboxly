@@ -3,7 +3,7 @@
  * Main Plugin Class
  */
 
-class Worknoon_Chat_Main {
+class Inboxly_Chat_Main {
 
     public function __construct() {
         add_action('init', array($this, 'register_chat_session_type'));
@@ -20,13 +20,13 @@ class Worknoon_Chat_Main {
 
     public function maybe_redirect_on_activation() {
         // Only redirect once, and only for users with manage_options
-        $flag = get_option('worknoon_chat_do_activation_redirect', false);
+        $flag = get_option('inboxly_chat_do_activation_redirect', false);
         if (!$flag) {
             return;
         }
 
         // remove the flag so we only redirect once
-        delete_option('worknoon_chat_do_activation_redirect');
+        delete_option('inboxly_chat_do_activation_redirect');
 
         if (!current_user_can('manage_options')) {
             return;
@@ -37,16 +37,16 @@ class Worknoon_Chat_Main {
             return;
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=worknoon-chat-onboarding'));
+        wp_safe_redirect(admin_url('admin.php?page=inboxly-chat-onboarding'));
         exit;
     }
 
     public function enqueue_frontend_assets() {
         wp_enqueue_style(
-            'worknoon-chat-styles',
-            WORKNOON_CHAT_URL . 'assets/css/chat.css',
+            'inboxly-chat-styles',
+            INBOXLY_CHAT_URL . 'assets/css/chat.css',
             array(),
-            WORKNOON_CHAT_VERSION
+            INBOXLY_CHAT_VERSION
         );
 
         wp_enqueue_script(
@@ -58,45 +58,61 @@ class Worknoon_Chat_Main {
         );
 
         wp_enqueue_script(
-            'worknoon-chat-app',
-            WORKNOON_CHAT_URL . 'assets/js/chat-app.js',
+            'inboxly-chat-app',
+            INBOXLY_CHAT_URL . 'assets/js/chat-app.js',
             array('socket-io'),
-            WORKNOON_CHAT_VERSION,
+            INBOXLY_CHAT_VERSION,
             true
         );
 
-        $api_url = get_option('worknoon_chat_api_url', 'http://localhost:5000');
+        $api_url = get_option('inboxly_chat_api_url', 'https://api.inboxly.com');
+        $api_key = get_option('inboxly_chat_api_key', '');
         $current_user = wp_get_current_user();
         $context = $this->get_page_context();
 
-        wp_localize_script('worknoon-chat-app', 'WorknoonChat', array(
+        $widgetSettings = array(
+            'position' => get_option('inboxly_chat_widget_position', 'bottom-right'),
+            'primaryColor' => get_option('inboxly_chat_widget_primary_color', '#0b74f9'),
+            'secondaryColor' => get_option('inboxly_chat_widget_secondary_color', '#6d28d9'),
+            'title' => get_option('inboxly_chat_widget_title', 'Live chat support'),
+            'welcomeMessage' => get_option('inboxly_chat_widget_welcome_message', 'Hi there! Ask me anything about orders, pricing, or product details.'),
+            'offlineEnabled' => get_option('inboxly_chat_enable_offline_form', true),
+            'offlineLabel' => get_option('inboxly_chat_offline_contact_label', 'We’re offline now — leave a message and we’ll email you back shortly.'),
+            'singleAgentEnabled' => get_option('inboxly_chat_single_agent_enabled', true),
+            'agentName' => get_option('inboxly_chat_agent_name', 'Megan Support'),
+            'agentEmail' => get_option('inboxly_chat_agent_email', 'support@inboxly.com'),
+        );
+
+        wp_localize_script('inboxly-chat-app', 'InboxlyChat', array(
             'apiUrl' => $api_url,
+            'apiKey' => $api_key,
             'userId' => $current_user->ID,
             'userEmail' => $current_user->user_email,
             'userName' => $current_user->user_login,
             'isLoggedIn' => is_user_logged_in(),
-            'nonce' => wp_create_nonce('worknoon_chat_nonce'),
+            'nonce' => wp_create_nonce('inboxly_chat_nonce'),
             'pageContext' => $context,
+            'widgetSettings' => $widgetSettings,
         ));
     }
 
     public function enqueue_admin_assets($hook) {
-        if (strpos($hook, 'worknoon-chat') === false) {
+        if (strpos($hook, 'inboxly-chat') === false) {
             return;
         }
 
         wp_enqueue_style(
-            'worknoon-chat-admin',
-            WORKNOON_CHAT_URL . 'assets/css/admin.css',
+            'inboxly-chat-admin',
+            INBOXLY_CHAT_URL . 'assets/css/admin.css',
             array(),
-            WORKNOON_CHAT_VERSION
+            INBOXLY_CHAT_VERSION
         );
 
         wp_enqueue_script(
-            'worknoon-chat-admin',
-            WORKNOON_CHAT_URL . 'assets/js/admin.js',
+            'inboxly-chat-admin',
+            INBOXLY_CHAT_URL . 'assets/js/admin.js',
             array('jquery'),
-            WORKNOON_CHAT_VERSION,
+            INBOXLY_CHAT_VERSION,
             true
         );
     }
@@ -106,7 +122,7 @@ class Worknoon_Chat_Main {
             return;
         }
 
-        echo '<div id="worknoon-chat-widget"></div>';
+        echo '<div id="inboxly-chat-widget"></div>';
     }
 
     public function render_chat_shortcode($atts) {
@@ -114,24 +130,24 @@ class Worknoon_Chat_Main {
             return '<p>Please log in to use the chat feature.</p>';
         }
 
-        return '<div id="worknoon-chat-shortcode" style="width: 100%; height: 600px;"></div>';
+        return '<div id="inboxly-chat-shortcode" style="width: 100%; height: 600px;"></div>';
     }
 
     public function register_chat_session_type() {
         $labels = array(
-            'name' => __('Chat Sessions', 'worknoon-chat'),
-            'singular_name' => __('Chat Session', 'worknoon-chat'),
-            'menu_name' => __('Chat Sessions', 'worknoon-chat'),
-            'name_admin_bar' => __('Chat Session', 'worknoon-chat'),
-            'add_new' => __('Add New', 'worknoon-chat'),
-            'add_new_item' => __('Add New Chat Session', 'worknoon-chat'),
-            'new_item' => __('New Chat Session', 'worknoon-chat'),
-            'edit_item' => __('Edit Chat Session', 'worknoon-chat'),
-            'view_item' => __('View Chat Session', 'worknoon-chat'),
-            'all_items' => __('All Chat Sessions', 'worknoon-chat'),
-            'search_items' => __('Search Chat Sessions', 'worknoon-chat'),
-            'not_found' => __('No chat sessions found.', 'worknoon-chat'),
-            'not_found_in_trash' => __('No chat sessions found in Trash.', 'worknoon-chat'),
+            'name' => __('Chat Sessions', 'inboxly-chat'),
+            'singular_name' => __('Chat Session', 'inboxly-chat'),
+            'menu_name' => __('Chat Sessions', 'inboxly-chat'),
+            'name_admin_bar' => __('Chat Session', 'inboxly-chat'),
+            'add_new' => __('Add New', 'inboxly-chat'),
+            'add_new_item' => __('Add New Chat Session', 'inboxly-chat'),
+            'new_item' => __('New Chat Session', 'inboxly-chat'),
+            'edit_item' => __('Edit Chat Session', 'inboxly-chat'),
+            'view_item' => __('View Chat Session', 'inboxly-chat'),
+            'all_items' => __('All Chat Sessions', 'inboxly-chat'),
+            'search_items' => __('Search Chat Sessions', 'inboxly-chat'),
+            'not_found' => __('No chat sessions found.', 'inboxly-chat'),
+            'not_found_in_trash' => __('No chat sessions found in Trash.', 'inboxly-chat'),
         );
 
         $args = array(
@@ -152,8 +168,8 @@ class Worknoon_Chat_Main {
 
     public function register_session_meta_boxes() {
         add_meta_box(
-            'worknoon_chat_session_meta',
-            __('Chat Session Details', 'worknoon-chat'),
+            'inboxly_chat_session_meta',
+            __('Chat Session Details', 'inboxly-chat'),
             array($this, 'render_session_meta_box'),
             'chat_session',
             'side',
@@ -162,15 +178,15 @@ class Worknoon_Chat_Main {
     }
 
     public function render_session_meta_box($post) {
-        $order_id = get_post_meta($post->ID, '_worknoon_chat_order_id', true);
-        $product_ids = get_post_meta($post->ID, '_worknoon_chat_product_ids', true);
-        $context = get_post_meta($post->ID, '_worknoon_chat_context', true);
-        $backend_conversation = get_post_meta($post->ID, '_worknoon_chat_backend_conversation_id', true);
+        $order_id = get_post_meta($post->ID, '_inboxly_chat_order_id', true);
+        $product_ids = get_post_meta($post->ID, '_inboxly_chat_product_ids', true);
+        $context = get_post_meta($post->ID, '_inboxly_chat_context', true);
+        $backend_conversation = get_post_meta($post->ID, '_inboxly_chat_backend_conversation_id', true);
 
-        echo '<p><strong>' . __('Context', 'worknoon-chat') . ':</strong> ' . esc_html($context ?: __('General', 'worknoon-chat')) . '</p>';
-        echo '<p><strong>' . __('Order ID', 'worknoon-chat') . ':</strong> ' . esc_html($order_id ?: __('None', 'worknoon-chat')) . '</p>';
-        echo '<p><strong>' . __('Product IDs', 'worknoon-chat') . ':</strong> ' . esc_html(is_array($product_ids) ? implode(', ', $product_ids) : $product_ids) . '</p>';
-        echo '<p><strong>' . __('Backend Conversation', 'worknoon-chat') . ':</strong> ' . esc_html($backend_conversation ?: __('Not created', 'worknoon-chat')) . '</p>';
+        echo '<p><strong>' . __('Context', 'inboxly-chat') . ':</strong> ' . esc_html($context ?: __('General', 'inboxly-chat')) . '</p>';
+        echo '<p><strong>' . __('Order ID', 'inboxly-chat') . ':</strong> ' . esc_html($order_id ?: __('None', 'inboxly-chat')) . '</p>';
+        echo '<p><strong>' . __('Product IDs', 'inboxly-chat') . ':</strong> ' . esc_html(is_array($product_ids) ? implode(', ', $product_ids) : $product_ids) . '</p>';
+        echo '<p><strong>' . __('Backend Conversation', 'inboxly-chat') . ':</strong> ' . esc_html($backend_conversation ?: __('Not created', 'inboxly-chat')) . '</p>';
     }
 
     public function handle_woocommerce_new_order($order_id) {
@@ -194,7 +210,7 @@ class Worknoon_Chat_Main {
         }
 
         $session_id = $this->create_chat_session(array(
-            'title' => sprintf(__('Order #%d Support Chat', 'worknoon-chat'), $order_id),
+            'title' => sprintf(__('Order #%d Support Chat', 'inboxly-chat'), $order_id),
             'user_id' => $order->get_user_id(),
             'order_id' => $order_id,
             'product_ids' => $product_ids,
@@ -203,13 +219,13 @@ class Worknoon_Chat_Main {
         ));
 
         if ($session_id) {
-            update_post_meta($order_id, '_worknoon_chat_session_id', $session_id);
+            update_post_meta($order_id, '_inboxly_chat_session_id', $session_id);
         }
     }
 
     protected function create_chat_session($args = array()) {
         $defaults = array(
-            'title' => __('Chat Session', 'worknoon-chat'),
+            'title' => __('Chat Session', 'inboxly-chat'),
             'user_id' => get_current_user_id(),
             'order_id' => '',
             'product_ids' => array(),
@@ -232,12 +248,12 @@ class Worknoon_Chat_Main {
             return false;
         }
 
-        update_post_meta($post_id, '_worknoon_chat_user_id', intval($args['user_id']));
-        update_post_meta($post_id, '_worknoon_chat_order_id', sanitize_text_field($args['order_id']));
-        update_post_meta($post_id, '_worknoon_chat_product_ids', array_map('intval', (array) $args['product_ids']));
-        update_post_meta($post_id, '_worknoon_chat_product_names', array_map('sanitize_text_field', (array) $args['product_names']));
-        update_post_meta($post_id, '_worknoon_chat_context', sanitize_text_field($args['context']));
-        update_post_meta($post_id, '_worknoon_chat_context_text', sanitize_textarea_field($args['context_text']));
+        update_post_meta($post_id, '_inboxly_chat_user_id', intval($args['user_id']));
+        update_post_meta($post_id, '_inboxly_chat_order_id', sanitize_text_field($args['order_id']));
+        update_post_meta($post_id, '_inboxly_chat_product_ids', array_map('intval', (array) $args['product_ids']));
+        update_post_meta($post_id, '_inboxly_chat_product_names', array_map('sanitize_text_field', (array) $args['product_names']));
+        update_post_meta($post_id, '_inboxly_chat_context', sanitize_text_field($args['context']));
+        update_post_meta($post_id, '_inboxly_chat_context_text', sanitize_textarea_field($args['context_text']));
 
         return $post_id;
     }
@@ -269,7 +285,7 @@ class Worknoon_Chat_Main {
                 $order = wc_get_order($order_id);
                 if ($order) {
                     $context['type'] = 'order';
-                    $context['title'] = sprintf(__('Order #%d Chat', 'worknoon-chat'), $order_id);
+                    $context['title'] = sprintf(__('Order #%d Chat', 'inboxly-chat'), $order_id);
                     $context['data'] = array(
                         'orderId' => $order_id,
                         'orderTotal' => $order->get_total(),

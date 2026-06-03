@@ -32,8 +32,8 @@ router.post('/register', async (req, res) => {
     try {
       await sendEmail({
         to: user.email,
-        subject: 'Welcome to Worknoon',
-        text: `Hi ${user.firstName || user.username},\n\nWelcome to Worknoon chat! Your account has been created successfully.\n\nThanks,\nThe Worknoon team`
+        subject: 'Welcome to Inboxly',
+        text: `Hi ${user.firstName || user.username},\n\nWelcome to Inboxly chat! Your account has been created successfully.\n\nThanks,\nThe Inboxly team`
       });
     } catch (emailError) {
       console.error('Welcome email failed:', emailError.message);

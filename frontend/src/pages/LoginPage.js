@@ -72,7 +72,7 @@ const LoginPage = () => {
             <span className="text-white font-bold text-xl">💬</span>
           </div>
           <h1 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            WorkNoon Chat
+            Inboxly Chat
           </h1>
           <p className={`mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             Connect in real-time
