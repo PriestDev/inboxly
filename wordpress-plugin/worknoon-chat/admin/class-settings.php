@@ -79,7 +79,18 @@ class Inboxly_Chat_Settings {
         }
 
         ?>
+        <?php $connected = get_option('inboxly_chat_connected', 0); ?>
         <div class="wrap inboxly-chat-admin-panel">
+            <div style="margin-bottom:1rem; display:flex; gap:1rem; align-items:center;">
+                <div class="status-badge" style="font-weight:600; padding:0.5rem 0.75rem; border-radius:999px;">
+                    <?php if ($connected) : ?>
+                        <span style="background:#d1fae5; color:#065f46; padding:0.25rem 0.6rem; border-radius:999px;"><?php esc_html_e('Connected', 'inboxly-chat'); ?></span>
+                    <?php else : ?>
+                        <span style="background:#fff7ed; color:#92400e; padding:0.25rem 0.6rem; border-radius:999px;"><?php esc_html_e('Not connected', 'inboxly-chat'); ?></span>
+                    <?php endif; ?>
+                </div>
+                <div style="color:#6b7280; font-size:0.95rem;"><?php esc_html_e('API key presence determines connection status. Configure API key and save to complete setup.', 'inboxly-chat'); ?></div>
+            </div>
             <div class="page-header">
                 <div>
                     <p class="page-eyebrow"><?php esc_html_e('Inboxly settings', 'inboxly-chat'); ?></p>

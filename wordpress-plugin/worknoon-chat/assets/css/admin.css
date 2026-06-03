@@ -179,3 +179,9 @@
 .inboxly-chat-admin-panel .button.button-secondary:hover {
     background: #eef2ff;
 }
+
+/* small status badge */
+.inboxly-chat-admin-panel .status-badge span {
+    font-size: 0.92rem;
+    line-height: 1;
+}
