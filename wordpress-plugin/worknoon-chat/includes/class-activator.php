@@ -30,6 +30,8 @@ class Inboxly_Chat_Activator {
             'single_agent_enabled' => true,
             'agent_name' => 'Megan Support',
             'agent_email' => 'support@inboxly.com',
+            // whether the plugin is connected (set when API key configured / widget detected)
+            'connected' => 0,
         );
 
         foreach ($default_settings as $key => $value) {

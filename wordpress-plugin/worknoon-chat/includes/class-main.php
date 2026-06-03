@@ -21,6 +21,15 @@ class Inboxly_Chat_Main {
     public function maybe_redirect_on_activation() {
         // Only redirect once, and only for users with manage_options
         $flag = get_option('inboxly_chat_do_activation_redirect', false);
+        // if plugin already marked connected, skip onboarding redirect
+        $connected = get_option('inboxly_chat_connected', 0);
+        if ($connected) {
+            // clear redirect flag and bail
+            if ($flag) {
+                delete_option('inboxly_chat_do_activation_redirect');
+            }
+            return;
+        }
         if (!$flag) {
             return;
         }

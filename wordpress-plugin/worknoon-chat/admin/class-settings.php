@@ -6,6 +6,8 @@
 class Inboxly_Chat_Settings {
 
     public function __construct() {
+        // keep onboarding visibility in sync with connection state
+        add_action('admin_init', array($this, 'maybe_mark_connected'));
     }
 
     public function add_settings_page() {
@@ -27,14 +29,18 @@ class Inboxly_Chat_Settings {
             array($this, 'render_sessions_page')
         );
 
-        add_submenu_page(
-            'inboxly-chat-settings',
-            'Onboarding & Setup',
-            'Onboarding',
-            'manage_options',
-            'inboxly-chat-onboarding',
-            array($this, 'render_onboarding_page')
-        );
+        // Only expose onboarding while site is not connected
+        $connected = get_option('inboxly_chat_connected', 0);
+        if (!$connected) {
+            add_submenu_page(
+                'inboxly-chat-settings',
+                'Onboarding & Setup',
+                'Onboarding',
+                'manage_options',
+                'inboxly-chat-onboarding',
+                array($this, 'render_onboarding_page')
+            );
+        }
     }
 
     public function register_settings() {
@@ -50,6 +56,21 @@ class Inboxly_Chat_Settings {
         register_setting('inboxly-chat-settings', 'inboxly_chat_single_agent_enabled');
         register_setting('inboxly-chat-settings', 'inboxly_chat_agent_name');
         register_setting('inboxly-chat-settings', 'inboxly_chat_agent_email');
+    }
+
+    public function maybe_mark_connected() {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
+        $api_key = get_option('inboxly_chat_api_key', '');
+        if (!empty($api_key)) {
+            update_option('inboxly_chat_connected', 1);
+            // remove onboarding redirect once connected
+            delete_option('inboxly_chat_do_activation_redirect');
+        } else {
+            update_option('inboxly_chat_connected', 0);
+        }
     }
 
     public function render_settings_page() {
@@ -74,6 +95,13 @@ class Inboxly_Chat_Settings {
                 <?php
                 settings_fields('inboxly-chat-settings');
                 do_settings_sections('inboxly-chat-settings');
+                // When saving settings, if API key exists we mark plugin connected
+                $api_key = get_option('inboxly_chat_api_key');
+                if (!empty($api_key)) {
+                    update_option('inboxly_chat_connected', 1);
+                    // once connected, remove one-time activation redirect and onboarding visibility
+                    delete_option('inboxly_chat_do_activation_redirect');
+                }
                 ?>
                 <div class="panel-card">
                     <table class="form-table">
@@ -296,6 +324,12 @@ class Inboxly_Chat_Settings {
     public function render_onboarding_page() {
         if (!current_user_can('manage_options')) {
             wp_die('Unauthorized');
+        }
+
+        // If plugin is already connected, send user to settings instead
+        if (get_option('inboxly_chat_connected', 0)) {
+            wp_safe_redirect(admin_url('admin.php?page=inboxly-chat-settings'));
+            exit;
         }
 
         $activated_at = get_option('inboxly_chat_activated_at');
