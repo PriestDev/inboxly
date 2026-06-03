@@ -6,8 +6,7 @@
 class Inboxly_Chat_Settings {
 
     public function __construct() {
-        // keep onboarding visibility in sync with connection state
-        add_action('admin_init', array($this, 'maybe_mark_connected'));
+        // Removed problematic admin_init hook - mark_connected will be called on settings save instead
     }
 
     public function add_settings_page() {
@@ -45,7 +44,6 @@ class Inboxly_Chat_Settings {
 
     public function register_settings() {
         register_setting('inboxly-chat-settings', 'inboxly_chat_api_url');
-        register_setting('inboxly-chat-settings', 'inboxly_chat_api_key');
         register_setting('inboxly-chat-settings', 'inboxly_chat_enable_notifications');
         register_setting('inboxly-chat-settings', 'inboxly_chat_enable_offline_form');
         register_setting('inboxly-chat-settings', 'inboxly_chat_offline_contact_label');
@@ -56,21 +54,6 @@ class Inboxly_Chat_Settings {
         register_setting('inboxly-chat-settings', 'inboxly_chat_single_agent_enabled');
         register_setting('inboxly-chat-settings', 'inboxly_chat_agent_name');
         register_setting('inboxly-chat-settings', 'inboxly_chat_agent_email');
-    }
-
-    public function maybe_mark_connected() {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
-
-        $api_key = get_option('inboxly_chat_api_key', '');
-        if (!empty($api_key)) {
-            update_option('inboxly_chat_connected', 1);
-            // remove onboarding redirect once connected
-            delete_option('inboxly_chat_do_activation_redirect');
-        } else {
-            update_option('inboxly_chat_connected', 0);
-        }
     }
 
     public function render_settings_page() {
@@ -98,7 +81,9 @@ class Inboxly_Chat_Settings {
                     <p><?php esc_html_e('Configure your chat backend and support widget from one polished control panel.', 'inboxly-chat'); ?></p>
                 </div>
                 <div class="page-actions">
-                    <a href="<?php echo esc_url(admin_url('admin.php?page=inboxly-chat-onboarding')); ?>" class="button button-primary"><?php esc_html_e('Onboarding guide', 'inboxly-chat'); ?></a>
+                    <?php if (!$connected) : ?>
+                        <a href="<?php echo esc_url(admin_url('admin.php?page=inboxly-chat-onboarding')); ?>" class="button button-primary"><?php esc_html_e('Onboarding guide', 'inboxly-chat'); ?></a>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -106,27 +91,9 @@ class Inboxly_Chat_Settings {
                 <?php
                 settings_fields('inboxly-chat-settings');
                 do_settings_sections('inboxly-chat-settings');
-                // When saving settings, if API key exists we mark plugin connected
-                $api_key = get_option('inboxly_chat_api_key');
-                if (!empty($api_key)) {
-                    update_option('inboxly_chat_connected', 1);
-                    // once connected, remove one-time activation redirect and onboarding visibility
-                    delete_option('inboxly_chat_do_activation_redirect');
-                }
                 ?>
                 <div class="panel-card">
                     <table class="form-table">
-                        <tr>
-                            <th scope="row">
-                                <label for="api_key"><?php esc_html_e('API Key', 'inboxly-chat'); ?></label>
-                            </th>
-                            <td>
-                                <input type="password" id="api_key" name="inboxly_chat_api_key" 
-                                       value="<?php echo esc_attr(get_option('inboxly_chat_api_key')); ?>"
-                                       class="regular-text" />
-                                <p class="description"><?php esc_html_e('Enter your Inboxly API key to connect this site securely.', 'inboxly-chat'); ?></p>
-                            </td>
-                        </tr>
                         <tr>
                             <th scope="row">
                                 <label for="enable_notifications"><?php esc_html_e('Enable Notifications', 'inboxly-chat'); ?></label>
@@ -343,8 +310,6 @@ class Inboxly_Chat_Settings {
             exit;
         }
 
-        $activated_at = get_option('inboxly_chat_activated_at');
-        $activated_site = get_option('inboxly_chat_activated_site');
         $shortcode = '[inboxly_chat]';
         ?>
         <div class="wrap inboxly-chat-admin-panel">
@@ -352,63 +317,38 @@ class Inboxly_Chat_Settings {
                 <div>
                     <p class="page-eyebrow"><?php esc_html_e('Getting started', 'inboxly-chat'); ?></p>
                     <h1><?php esc_html_e('Welcome to Inboxly', 'inboxly-chat'); ?></h1>
-                    <p><?php esc_html_e('Let's connect your site to Inboxly and start accepting live chat messages from your visitors.', 'inboxly-chat'); ?></p>
-                </div>
-                <div class="page-actions">
-                    <a href="<?php echo esc_url(admin_url('admin.php?page=inboxly-chat-settings')); ?>" class="button button-secondary"><?php esc_html_e('Skip to settings', 'inboxly-chat'); ?></a>
+                    <p><?php esc_html_e("Set up Inboxly chat on your site in just 2 steps. Connection happens automatically.", 'inboxly-chat'); ?></p>
                 </div>
             </div>
 
             <div class="panel-grid">
                 <section class="panel-card onboarding-step">
                     <div class="step-number">1</div>
-                    <h3><?php esc_html_e('Get your API key', 'inboxly-chat'); ?></h3>
-                    <p><?php esc_html_e('Sign up for a free Inboxly account and retrieve your API key from the dashboard.', 'inboxly-chat'); ?></p>
-                    <ol class="checklist" style="margin-top:1rem;">
-                        <li><?php esc_html_e('Visit', 'inboxly-chat'); ?> <strong><a href="https://app.inboxly.com/signup" target="_blank">app.inboxly.com</a></strong></li>
-                        <li><?php esc_html_e('Create your account or sign in', 'inboxly-chat'); ?></li>
-                        <li><?php esc_html_e('Go to Settings → API Keys', 'inboxly-chat'); ?></li>
-                        <li><?php esc_html_e('Copy your API key (starts with', 'inboxly-chat'); ?> <code>sk_</code>)</li>
-                    </ol>
+                    <h3><?php esc_html_e('Copy the shortcode', 'inboxly-chat'); ?></h3>
+                    <p><?php esc_html_e("Copy this shortcode and paste it into any WordPress page, post, or custom template where you want the chat widget to appear.", 'inboxly-chat'); ?></p>
+                    <div class="shortcode-box" style="margin-top:1rem;">
+                        <input type="text" id="inboxly-shortcode" readonly value="<?php echo esc_attr($shortcode); ?>" />
+                        <button class="button button-primary" id="inboxly-copy-shortcode"><?php esc_html_e('Copy', 'inboxly-chat'); ?></button>
+                    </div>
+                    <p class="description"><?php esc_html_e("The shortcode will display the Inboxly chat widget on your front end.", 'inboxly-chat'); ?></p>
                 </section>
 
                 <section class="panel-card onboarding-step">
                     <div class="step-number">2</div>
-                    <h3><?php esc_html_e('Configure the plugin', 'inboxly-chat'); ?></h3>
-                    <p><?php esc_html_e('Paste your API key into the plugin settings to connect your site.', 'inboxly-chat'); ?></p>
-                    <ol class="checklist" style="margin-top:1rem;">
-                        <li><?php esc_html_e('Go to', 'inboxly-chat'); ?> <strong><?php esc_html_e('WP Admin → Inboxly → Settings', 'inboxly-chat'); ?></strong></li>
-                        <li><?php esc_html_e('Paste your API key in the "API Key" field', 'inboxly-chat'); ?></li>
-                        <li><?php esc_html_e('Click "Save Changes"', 'inboxly-chat'); ?></li>
-                    </ol>
-                    <a href="<?php echo esc_url(admin_url('admin.php?page=inboxly-chat-settings')); ?>" class="button button-primary" style="margin-top:1.5rem;"><?php esc_html_e('Open Settings', 'inboxly-chat'); ?></a>
-                </section>
-
-                <section class="panel-card onboarding-step">
-                    <div class="step-number">3</div>
-                    <h3><?php esc_html_e('Add to your site', 'inboxly-chat'); ?></h3>
-                    <p><?php esc_html_e('Display the chat widget on any page or post using the shortcode below.', 'inboxly-chat'); ?></p>
-                    <div class="shortcode-box" style="margin-top:1rem;">
-                        <input type="text" id="inboxly-shortcode" readonly value="<?php echo esc_attr($shortcode); ?>" />
-                        <button class="button button-secondary" id="inboxly-copy-shortcode"><?php esc_html_e('Copy', 'inboxly-chat'); ?></button>
-                    </div>
-                    <p class="description"><?php esc_html_e('Paste this shortcode into any WordPress page, post, or custom template.', 'inboxly-chat'); ?></p>
+                    <h3><?php esc_html_e('Customize your chat', 'inboxly-chat'); ?></h3>
+                    <p><?php esc_html_e("Visit the Settings page to customize widget colors, position, welcome message, and other preferences.", 'inboxly-chat'); ?></p>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=inboxly-chat-settings')); ?>" class="button button-secondary" style="margin-top:1.5rem;"><?php esc_html_e('Go to Settings', 'inboxly-chat'); ?></a>
                 </section>
             </div>
 
             <section class="panel-card">
-                <h2><?php esc_html_e('What happens next?', 'inboxly-chat'); ?></h2>
+                <h2><?php esc_html_e("How it works", 'inboxly-chat'); ?></h2>
                 <ul class="checklist" style="list-style:disc; padding-left:1.5rem;">
-                    <li><?php esc_html_e('Once you save your API key, the "Onboarding" tab will disappear and Settings will be your control center.', 'inboxly-chat'); ?></li>
-                    <li><?php esc_html_e('Visitors will see the live chat widget on pages with the shortcode.', 'inboxly-chat'); ?></li>
-                    <li><?php esc_html_e('Your support team can respond to chats from the Inboxly dashboard.', 'inboxly-chat'); ?></li>
-                    <li><?php esc_html_e('If using WooCommerce, new orders will automatically create chat sessions.', 'inboxly-chat'); ?></li>
+                    <li><?php esc_html_e("Once you add the shortcode to a page, the chat widget appears for your visitors.", 'inboxly-chat'); ?></li>
+                    <li><?php esc_html_e("Your Inboxly dashboard automatically detects the connection when visitors start chatting.", 'inboxly-chat'); ?></li>
+                    <li><?php esc_html_e("Your support team can respond to chats directly from the Inboxly dashboard.", 'inboxly-chat'); ?></li>
+                    <li><?php esc_html_e("Chat history syncs automatically between WordPress and Inboxly.", 'inboxly-chat'); ?></li>
                 </ul>
-            </section>
-
-            <section class="panel-card" style="background:#f0fdf4; border-color:#86efac;">
-                <h2 style="color:#166534;"><?php esc_html_e('💡 Pro tip', 'inboxly-chat'); ?></h2>
-                <p style="color:#15803d;"><?php esc_html_e('Add the shortcode to a sticky footer or floating widget so the chat is always available to your visitors.', 'inboxly-chat'); ?></p>
             </section>
 
             <script>
