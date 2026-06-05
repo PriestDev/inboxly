@@ -14,7 +14,7 @@ class Inboxly_Chat_Activator {
 
         // Create plugin options
         $default_settings = array(
-            'api_url' => 'https://api.inboxly.com',
+            'api_url' => 'http://localhost:4000',
             'api_key' => '',
             'enable_notifications' => true,
             'notification_subject' => 'New Inboxly chat message',

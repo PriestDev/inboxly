@@ -77,7 +77,11 @@ const ChatWindow = ({ conversation, socket }) => {
         content: messageInput,
         messageType: 'text',
       });
-      setMessages((prevMessages) => [...prevMessages, response.data]);
+
+      if (!socket?.connected) {
+        setMessages((prevMessages) => [...prevMessages, response.data]);
+      }
+
       setMessageInput('');
       addNotification({
         type: 'success',
@@ -139,8 +143,8 @@ const ChatWindow = ({ conversation, socket }) => {
           </div>
         ) : (
           messages.map((message) => {
-            const senderId = message.senderId?._id || message.senderId;
-            const isMine = currentUser?._id === senderId;
+            const senderId = message.senderId?._id || message.senderId?.id || message.senderId;
+            const isMine = currentUser?._id?.toString() === senderId?.toString();
             const senderName = message.senderId?.username || message.senderName || 'You';
 
             return (

@@ -10,6 +10,14 @@ const ensureParticipant = (conversation, userId) => {
   return conversation.participants.some(participant => participant.userId.toString() === userId);
 };
 
+const findDefaultAgent = async () => {
+  let agent = await User.findOne({ userType: 'agent', isActive: true }).sort({ lastActive: -1 });
+  if (agent) {
+    return agent;
+  }
+  return await User.findOne({ userType: 'admin', isActive: true }).sort({ lastActive: -1 });
+};
+
 // Get user conversations
 router.get('/', authenticate, async (req, res) => {
   try {
@@ -17,6 +25,7 @@ router.get('/', authenticate, async (req, res) => {
       'participants.userId': req.userId
     })
       .populate('participants.userId', 'username avatar status userType')
+      .populate('assignedAgent', 'username avatar status userType')
       .populate('lastMessage')
       .sort({ lastActivityAt: -1 });
 
@@ -68,16 +77,35 @@ router.post('/', authenticate, async (req, res) => {
       normalizedParticipants.unshift({ userId: req.userId, role: 'customer' });
     }
 
+    const conversationType = ['direct', 'group', 'support'].includes(type) ? type : 'support';
+    const agentParticipants = normalizedParticipants.filter(p => p.role === 'agent');
+    let assignedAgent = agentParticipants.length > 0 ? agentParticipants[0].userId : null;
+
+    if (!assignedAgent && conversationType === 'support') {
+      const defaultAgent = await findDefaultAgent();
+      if (defaultAgent) {
+        normalizedParticipants.push({ userId: defaultAgent._id, role: 'agent' });
+        assignedAgent = defaultAgent._id;
+      }
+    }
+
+    const assignedAgentIds = normalizedParticipants
+      .filter(participant => participant.role === 'agent')
+      .map(participant => participant.userId);
+
     const conversation = new Conversation({
       participants: normalizedParticipants,
-      type: type || 'direct',
+      type: conversationType,
       title,
       subject,
+      assignedAgent,
+      assignedAgentIds,
       lastActivityAt: new Date()
     });
 
     await conversation.save();
     await conversation.populate('participants.userId', 'username avatar status userType');
+    await conversation.populate('assignedAgent', 'username avatar status userType');
 
     res.status(201).json(conversation);
   } catch (error) {
@@ -90,6 +118,7 @@ router.get('/:conversationId', authenticate, async (req, res) => {
   try {
     const conversation = await Conversation.findById(req.params.conversationId)
       .populate('participants.userId', 'username avatar status userType')
+      .populate('assignedAgent', 'username avatar status userType')
       .populate('lastMessage');
 
     if (!conversation) {

@@ -18,6 +18,41 @@ class Inboxly_Chat_Main {
         }
     }
 
+    public static function get_api_url() {
+        $default_url = 'http://localhost:4000';
+
+        if (defined('INBOXLY_CHAT_API_URL') && INBOXLY_CHAT_API_URL) {
+            return self::normalize_api_url(INBOXLY_CHAT_API_URL);
+        }
+
+        $env_url = getenv('INBOXLY_CHAT_API_URL');
+        if ($env_url) {
+            return self::normalize_api_url($env_url);
+        }
+
+        $option_url = get_option('inboxly_chat_api_url', '');
+        if ($option_url) {
+            return self::normalize_api_url($option_url);
+        }
+
+        return $default_url;
+    }
+
+    private static function normalize_api_url($url) {
+        $url = trim($url);
+        $url = trim($url, "' \t\r\n");
+
+        if (!$url) {
+            return 'http://localhost:4000';
+        }
+
+        if (!preg_match('#^https?://#i', $url)) {
+            $url = 'http://' . $url;
+        }
+
+        return rtrim($url, '/');
+    }
+
     public function maybe_redirect_on_activation() {
         // Only redirect once, and only for users with manage_options
         $flag = get_option('inboxly_chat_do_activation_redirect', false);
@@ -60,9 +95,9 @@ class Inboxly_Chat_Main {
 
         wp_enqueue_script(
             'socket-io',
-            'https://cdn.socket.io/4.5.4/socket.io.js',
+            'https://cdn.socket.io/4.7.2/socket.io.min.js',
             array(),
-            '4.5.4',
+            '4.7.2',
             true
         );
 
@@ -74,7 +109,7 @@ class Inboxly_Chat_Main {
             true
         );
 
-        $api_url = get_option('inboxly_chat_api_url', 'https://api.inboxly.com');
+        $api_url = self::get_api_url();
         $api_key = get_option('inboxly_chat_api_key', '');
         $current_user = wp_get_current_user();
         $context = $this->get_page_context();
@@ -99,7 +134,7 @@ class Inboxly_Chat_Main {
             'userEmail' => $current_user->user_email,
             'userName' => $current_user->user_login,
             'isLoggedIn' => is_user_logged_in(),
-            'nonce' => wp_create_nonce('inboxly_chat_nonce'),
+            'nonce' => wp_create_nonce('wp_rest'),
             'pageContext' => $context,
             'widgetSettings' => $widgetSettings,
         ));
@@ -109,6 +144,8 @@ class Inboxly_Chat_Main {
         if (strpos($hook, 'inboxly-chat') === false) {
             return;
         }
+
+        wp_enqueue_style('dashicons');
 
         wp_enqueue_style(
             'inboxly-chat-admin',

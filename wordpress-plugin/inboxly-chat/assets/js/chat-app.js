@@ -8,10 +8,92 @@
             this.socket = null;
             this.token = null;
             this.conversationId = null;
-            this.userId = window.InboxlyChat.userId;
-            this.apiUrl = window.InboxlyChat.apiUrl;
-            this.pageContext = window.InboxlyChat.pageContext || { type: 'general', data: {} };
+            this.assignedAgent = null;
+            const inboxlyConfig = (typeof window !== 'undefined' && window.InboxlyChat) ? window.InboxlyChat : {};
+            this.userId = inboxlyConfig.userId || null;
+            const globalApiUrl = (typeof window !== 'undefined' && window.INBOXLY_CHAT_API_URL) ? window.INBOXLY_CHAT_API_URL : undefined;
+            this.apiUrl = globalApiUrl || inboxlyConfig.apiUrl || 'http://localhost:4000';
+            if (this.apiUrl && !/^https?:\/\//i.test(this.apiUrl)) {
+                this.apiUrl = 'http://' + this.apiUrl;
+            }
+            console.log('InboxlyChat API URL:', this.apiUrl);
+            this.pageContext = inboxlyConfig.pageContext || { type: 'support', data: {} };
+            this.widgetSettings = Object.assign({
+                position: 'bottom-right',
+                primaryColor: '#0b74f9',
+                secondaryColor: '#6d28d9',
+                welcomeMessage: 'Hi there! Ask me anything about orders, pricing, or product details.',
+                offlineEnabled: true,
+                offlineLabel: 'We’re offline now — leave a message and we’ll email you back shortly.',
+                singleAgentEnabled: true,
+                agentName: 'Megan Support',
+                agentEmail: 'support@inboxly.com'
+            }, inboxlyConfig.widgetSettings || {});
             this.init();
+        }
+
+        normalizeWidgetPosition(position) {
+            const validPositions = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
+            return validPositions.includes(position) ? position : 'bottom-right';
+        }
+
+        applyWidgetSettings(container, toggle) {
+            const position = this.normalizeWidgetPosition(this.widgetSettings.position);
+            const isSidePosition = position.startsWith('top-');
+
+            if (isSidePosition) {
+                container.style.top = 'calc(50% - 300px)';
+                container.style.bottom = 'auto';
+            } else {
+                container.style.bottom = '20px';
+                container.style.top = 'auto';
+            }
+
+            container.style.right = position.endsWith('right') ? '20px' : 'auto';
+            container.style.left = position.endsWith('left') ? '20px' : 'auto';
+
+            if (toggle) {
+                if (isSidePosition) {
+                    toggle.style.top = 'calc(50% - 28px)';
+                    toggle.style.bottom = 'auto';
+                } else {
+                    toggle.style.bottom = '28px';
+                    toggle.style.top = 'auto';
+                }
+                toggle.style.right = position.endsWith('right') ? '28px' : 'auto';
+                toggle.style.left = position.endsWith('left') ? '28px' : 'auto';
+            }
+
+            const header = container.querySelector('.inboxly-chat-header');
+            if (header) {
+                header.style.background = this.widgetSettings.primaryColor;
+            }
+
+            const sendButton = container.querySelector('.inboxly-chat-input button');
+            if (sendButton) {
+                sendButton.style.background = this.widgetSettings.primaryColor;
+            }
+
+            const chatInput = container.querySelector('.inboxly-chat-input input');
+            if (chatInput) {
+                chatInput.style.borderColor = this.widgetSettings.secondaryColor;
+            }
+
+            const welcomeMessage = container.querySelector('.inboxly-chat-welcome');
+            if (welcomeMessage) {
+                welcomeMessage.textContent = this.widgetSettings.welcomeMessage;
+            }
+        }
+
+        getConversationType() {
+            const type = this.pageContext.type;
+            if (type === 'product' || type === 'order') {
+                return 'support';
+            }
+            if (type === 'group' || type === 'direct' || type === 'support') {
+                return type;
+            }
+            return 'support';
         }
 
         init() {
@@ -40,6 +122,7 @@
                         <h3>${window.InboxlyChat.pageContext.type === 'product' ? 'Product Support Chat' : window.InboxlyChat.pageContext.type === 'order' ? 'Order Support Chat' : 'Inboxly'}</h3>
                         <button class="inboxly-chat-close" type="button" aria-label="Close chat">&times;</button>
                     </div>
+                    <div class="inboxly-chat-welcome"></div>
                     <div class="inboxly-chat-notice" role="status" aria-live="polite"></div>
                     <div class="inboxly-chat-messages"></div>
                     <div class="inboxly-chat-input">
@@ -104,6 +187,8 @@
                 this.updateToggleVisibility();
                 this.observeModalState();
             }
+
+            this.applyWidgetSettings(container, document.querySelector('#inboxly-chat-toggle'));
         }
 
         initializeSocket() {
@@ -228,7 +313,7 @@
             this.createBackendConversation({
                 title: `Product Chat: ${productName}`,
                 subject: `Product ID ${productId}`,
-                type: 'product'
+                type: 'support'
             });
         }
 
@@ -253,11 +338,12 @@
             this.createBackendConversation({
                 title: `Order Chat: ${orderId}`,
                 subject: `Order ID ${orderId}`,
-                type: 'order'
+                type: 'support'
             });
         }
 
         createBackendConversation(payload) {
+            const conversationType = ['direct', 'group', 'support'].includes(payload.type) ? payload.type : this.getConversationType();
             return fetch(this.apiUrl + '/api/chats', {
                 method: 'POST',
                 headers: {
@@ -266,16 +352,34 @@
                 },
                 body: JSON.stringify({
                     participantIds: [],
-                    type: payload.type,
+                    type: conversationType,
                     title: payload.title,
                     subject: payload.subject,
                 })
             })
-            .then(res => res.json())
+            .then(async (res) => {
+                const raw = await res.text();
+                if (!res.ok) {
+                    throw new Error(`Backend returned ${res.status}: ${raw}`);
+                }
+                try {
+                    return JSON.parse(raw);
+                } catch (err) {
+                    throw new Error(`Invalid JSON from backend: ${raw}`);
+                }
+            })
             .then(data => {
                 console.log('createBackendConversation response:', data);
                 if (data && data._id) {
                     this.conversationId = data._id;
+                    if (data.assignedAgent) {
+                        this.assignedAgent = data.assignedAgent;
+                    } else if (data.assignedAgentIds && data.assignedAgentIds.length > 0) {
+                        this.assignedAgent = {
+                            _id: data.assignedAgentIds[0],
+                            username: this.widgetSettings.agentName || 'Support'
+                        };
+                    }
                     // Join the conversation room so socket events are received
                     if (this.socket && this.socket.connected) {
                         this.socket.emit('join_conversation', this.conversationId);
@@ -323,7 +427,7 @@
                 try {
                     const title = this.pageContext.type === 'product' ? (`Product Chat: ${this.pageContext.data.productName || ''}`) : this.pageContext.type === 'order' ? (`Order Chat: ${this.pageContext.data.orderId || ''}`) : 'Support Chat';
                     const subject = content.slice(0, 120);
-                    await this.createBackendConversation({ title, subject, type: this.pageContext.type || 'general' });
+                    await this.createBackendConversation({ title, subject, type: this.getConversationType() });
                 } catch (err) {
                     console.error('Failed to create conversation before sending message:', err);
                     this.showError('Unable to start chat conversation. Please check the backend URL and try again.');
@@ -363,12 +467,17 @@
                         body: JSON.stringify({ content, messageType: 'text' })
                     });
 
+                    const raw = await res.text();
                     if (!res.ok) {
-                        throw new Error(`Backend returned ${res.status}`);
+                        throw new Error(`Backend returned ${res.status}: ${raw}`);
                     }
 
-                    const data = await res.json();
-                    console.log('REST message send response:', data);
+                    try {
+                        const data = JSON.parse(raw);
+                        console.log('REST message send response:', data);
+                    } catch (err) {
+                        throw new Error(`Invalid JSON from backend: ${raw}`);
+                    }
                 } catch (err) {
                     console.error('Failed to send message via REST fallback:', err);
                     this.showError('Unable to send message. Please check the backend URL and try again.');
@@ -381,10 +490,15 @@
             if (!messagesContainer) return;
 
             const senderId = (typeof message.senderId === 'object' && message.senderId) ? (message.senderId._id || message.senderId.id || message.senderId) : message.senderId;
+            const isOwnMessage = senderId === this.userId;
+            const senderName = message.senderName || (isOwnMessage ? (window.InboxlyChat.userName || 'You') : (this.assignedAgent?.username || this.widgetSettings.agentName || 'Support'));
 
             const messageElement = document.createElement('div');
-            messageElement.className = 'inboxly-chat-message ' + (senderId === this.userId ? 'sent' : 'received');
-            messageElement.innerHTML = `<div class="message-content">${message.content}</div>`;
+            messageElement.className = 'inboxly-chat-message ' + (isOwnMessage ? 'sent' : 'received');
+            messageElement.innerHTML = `
+                <div class="message-sender">${senderName}</div>
+                <div class="message-content">${message.content}</div>
+            `;
             messagesContainer.appendChild(messageElement);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }

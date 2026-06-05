@@ -72,8 +72,8 @@ const socketHandler = (io) => {
         // Broadcast to conversation room
         io.to(`conversation_${conversationId}`).emit('new_message', {
           _id: message._id,
-          conversationId,
-          senderId: message.senderId,
+          conversationId: conversationId.toString(),
+          senderId: message.senderId ? message.senderId.toString() : null,
           senderName: message.senderName,
           senderAvatar: message.senderAvatar,
           content,

@@ -10,7 +10,7 @@ export const useChatStore = create((set) => ({
   setCurrentConversation: (conversation) => set({ currentConversation: conversation }),
   setMessages: (messages) => set({ messages }),
   addMessage: (message) => set((state) => ({
-    messages: [...state.messages, message]
+    messages: state.messages.some((m) => m._id === message._id) ? state.messages : [...state.messages, message]
   })),
   addTypingUser: (userId) => set((state) => ({
     typingUsers: [...new Set([...state.typingUsers, userId])]

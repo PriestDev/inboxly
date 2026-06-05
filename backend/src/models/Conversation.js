@@ -40,6 +40,14 @@ const conversationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Message'
   },
+  assignedAgent: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  assignedAgentIds: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   lastActivityAt: {
     type: Date,
     default: Date.now

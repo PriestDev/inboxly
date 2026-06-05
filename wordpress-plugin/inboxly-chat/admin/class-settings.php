@@ -43,7 +43,6 @@ class Inboxly_Chat_Settings {
     }
 
     public function register_settings() {
-        register_setting('inboxly-chat-settings', 'inboxly_chat_api_url');
         register_setting('inboxly-chat-settings', 'inboxly_chat_enable_notifications');
         register_setting('inboxly-chat-settings', 'inboxly_chat_enable_offline_form');
         register_setting('inboxly-chat-settings', 'inboxly_chat_offline_contact_label');
@@ -62,28 +61,12 @@ class Inboxly_Chat_Settings {
         }
 
         ?>
-        <?php $connected = get_option('inboxly_chat_connected', 0); ?>
         <div class="wrap inboxly-chat-admin-panel">
-            <div style="margin-bottom:1rem; display:flex; gap:1rem; align-items:center;">
-                <div class="status-badge" style="font-weight:600; padding:0.5rem 0.75rem; border-radius:999px;">
-                    <?php if ($connected) : ?>
-                        <span style="background:#d1fae5; color:#065f46; padding:0.25rem 0.6rem; border-radius:999px;"><?php esc_html_e('Connected', 'inboxly-chat'); ?></span>
-                    <?php else : ?>
-                        <span style="background:#fff7ed; color:#92400e; padding:0.25rem 0.6rem; border-radius:999px;"><?php esc_html_e('Not connected', 'inboxly-chat'); ?></span>
-                    <?php endif; ?>
-                </div>
-                <div style="color:#6b7280; font-size:0.95rem;"><?php esc_html_e('API key presence determines connection status. Configure API key and save to complete setup.', 'inboxly-chat'); ?></div>
-            </div>
             <div class="page-header">
                 <div>
-                    <p class="page-eyebrow"><?php esc_html_e('Inboxly settings', 'inboxly-chat'); ?></p>
+                    <p class="page-eyebrow"><?php esc_html_e('Inboxly chat settings', 'inboxly-chat'); ?></p>
                     <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
-                    <p><?php esc_html_e('Configure your chat backend and support widget from one polished control panel.', 'inboxly-chat'); ?></p>
-                </div>
-                <div class="page-actions">
-                    <?php if (!$connected) : ?>
-                        <a href="<?php echo esc_url(admin_url('admin.php?page=inboxly-chat-onboarding')); ?>" class="button button-primary"><?php esc_html_e('Onboarding guide', 'inboxly-chat'); ?></a>
-                    <?php endif; ?>
+                    <p><?php esc_html_e('Inboxly automatically connects your WordPress site to the chat backend. Use this page to customize widget behavior, colors, and messaging.', 'inboxly-chat'); ?></p>
                 </div>
             </div>
 
@@ -116,8 +99,8 @@ class Inboxly_Chat_Settings {
                                     <?php $position = esc_attr(get_option('inboxly_chat_widget_position')); ?>
                                     <option value="bottom-right" <?php selected($position, 'bottom-right'); ?>><?php esc_html_e('Bottom right', 'inboxly-chat'); ?></option>
                                     <option value="bottom-left" <?php selected($position, 'bottom-left'); ?>><?php esc_html_e('Bottom left', 'inboxly-chat'); ?></option>
-                                    <option value="top-right" <?php selected($position, 'top-right'); ?>><?php esc_html_e('Top right', 'inboxly-chat'); ?></option>
-                                    <option value="top-left" <?php selected($position, 'top-left'); ?>><?php esc_html_e('Top left', 'inboxly-chat'); ?></option>
+                                    <option value="top-right" <?php selected($position, 'top-right'); ?>><?php esc_html_e('Side right', 'inboxly-chat'); ?></option>
+                                    <option value="top-left" <?php selected($position, 'top-left'); ?>><?php esc_html_e('Side left', 'inboxly-chat'); ?></option>
                                 </select>
                                 <p class="description"><?php esc_html_e('Choose the position for the floating chat widget.', 'inboxly-chat'); ?></p>
                             </td>

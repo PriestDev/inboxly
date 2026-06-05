@@ -1,6 +1,6 @@
 const express = require('express');
 const User = require('../models/User');
-const { generateToken } = require('../config/jwt');
+const { generateToken, verifyToken } = require('../config/jwt');
 const authenticate = require('../middleware/auth');
 const { sendEmail } = require('../utils/emailService');
 

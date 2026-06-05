@@ -104,17 +104,17 @@ class Inboxly_Chat_REST_API {
         }
 
         $api_key = get_option('inboxly_chat_api_key', '');
-        if (!$api_key) {
-            return new WP_Error('missing_api_key', 'API key is required for backend calls', array('status' => 500));
+        $api_url = Inboxly_Chat_Main::get_api_url();
+        $headers = array(
+            'Content-Type' => 'application/json',
+        );
+        if ($api_key) {
+            $headers['Authorization'] = 'Bearer ' . $api_key;
+            $headers['X-API-Key'] = $api_key;
         }
 
-        $api_url = get_option('inboxly_chat_api_url', 'https://api.inboxly.com');
         $response = wp_remote_post($api_url . '/api/auth/wp-login', array(
-            'headers' => array(
-                'Content-Type' => 'application/json',
-                'Authorization' => 'Bearer ' . $api_key,
-                'X-API-Key' => $api_key,
-            ),
+            'headers' => $headers,
             'body' => wp_json_encode(array(
                 'wpUserId' => $current_user->ID,
                 'email' => $current_user->user_email,
@@ -140,17 +140,17 @@ class Inboxly_Chat_REST_API {
         }
 
         $api_key = get_option('inboxly_chat_api_key', '');
-        if (!$api_key) {
-            return new WP_Error('missing_api_key', 'API key is required for backend calls', array('status' => 500));
+        $api_url = Inboxly_Chat_Main::get_api_url();
+        $headers = array(
+            'Content-Type' => 'application/json',
+        );
+        if ($api_key) {
+            $headers['Authorization'] = 'Bearer ' . $api_key;
+            $headers['X-API-Key'] = $api_key;
         }
 
-        $api_url = get_option('inboxly_chat_api_url', 'https://api.inboxly.com');
         $response = wp_remote_post($api_url . '/api/auth/wp-login', array(
-            'headers' => array(
-                'Content-Type' => 'application/json',
-                'Authorization' => 'Bearer ' . $api_key,
-                'X-API-Key' => $api_key,
-            ),
+            'headers' => $headers,
             'body' => wp_json_encode(array(
                 'wpUserId' => $current_user->ID,
                 'email' => $current_user->user_email,
@@ -178,17 +178,17 @@ class Inboxly_Chat_REST_API {
         }
 
         $api_key = get_option('inboxly_chat_api_key', '');
-        if (!$api_key) {
-            return new WP_Error('missing_api_key', 'API key is required for backend calls', array('status' => 500));
+        $api_url = Inboxly_Chat_Main::get_api_url();
+        $headers = array(
+            'Content-Type' => 'application/json',
+        );
+        if ($api_key) {
+            $headers['Authorization'] = 'Bearer ' . $api_key;
+            $headers['X-API-Key'] = $api_key;
         }
 
-        $api_url = get_option('inboxly_chat_api_url', 'https://api.inboxly.com');
         $response = wp_remote_post($api_url . '/api/auth/verify-token', array(
-            'headers' => array(
-                'Content-Type' => 'application/json',
-                'Authorization' => 'Bearer ' . $api_key,
-                'X-API-Key' => $api_key,
-            ),
+            'headers' => $headers,
             'body' => wp_json_encode(array('token' => $token)),
             'timeout' => 20,
         ));
