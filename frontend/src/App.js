@@ -9,6 +9,11 @@ import ChatPage from './pages/ChatPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminDashboard from './pages/AdminDashboard';
 import LandingPage from './pages/LandingPage';
+import FeaturesPage from './pages/FeaturesPage';
+import SetupPage from './pages/SetupPage';
+import WidgetSettingsPage from './pages/WidgetSettingsPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import TeamPage from './pages/TeamPage';
 import NotificationCenter from './components/NotificationCenter';
 import './styles/index.css';
 
@@ -62,11 +67,25 @@ function App() {
       <div className={isDark ? 'dark' : ''}>
         <NotificationCenter />
         <Routes>
+          <Route path="/features" element={<FeaturesPage />} />
+          <Route path="/setup" element={<SetupPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route
             path="/chat/*"
             element={token ? <ChatPage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/admin/widgets"
+            element={token ? <WidgetSettingsPage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/admin/analytics"
+            element={token ? <AnalyticsPage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/admin/team"
+            element={token ? <TeamPage /> : <Navigate to="/login" />}
           />
           <Route
             path="/profile"
