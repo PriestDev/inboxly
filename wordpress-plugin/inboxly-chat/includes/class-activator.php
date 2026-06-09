@@ -16,6 +16,7 @@ class Inboxly_Chat_Activator {
         $default_settings = array(
             'api_url' => 'http://localhost:4000',
             'api_key' => '',
+            'agent_code' => '',
             'enable_notifications' => true,
             'notification_subject' => 'New Inboxly chat message',
             'notification_sender' => 'Inboxly Support',
@@ -27,7 +28,6 @@ class Inboxly_Chat_Activator {
             'widget_primary_color' => '#0b74f9',
             'widget_secondary_color' => '#6d28d9',
             'widget_title' => 'Live chat support',
-            'widget_welcome_message' => 'Hi there! Ask me anything about orders, pricing, or product details.',
             'single_agent_enabled' => true,
             'agent_name' => 'Megan Support',
             'agent_email' => 'support@inboxly.com',

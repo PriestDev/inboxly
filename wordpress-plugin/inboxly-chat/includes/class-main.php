@@ -119,12 +119,12 @@ class Inboxly_Chat_Main {
             'primaryColor' => get_option('inboxly_chat_widget_primary_color', '#0b74f9'),
             'secondaryColor' => get_option('inboxly_chat_widget_secondary_color', '#6d28d9'),
             'title' => get_option('inboxly_chat_widget_title', 'Live chat support'),
-            'welcomeMessage' => get_option('inboxly_chat_widget_welcome_message', 'Hi there! Ask me anything about orders, pricing, or product details.'),
             'offlineEnabled' => get_option('inboxly_chat_enable_offline_form', true),
             'offlineLabel' => get_option('inboxly_chat_offline_contact_label', 'We’re offline now — leave a message and we’ll email you back shortly.'),
             'singleAgentEnabled' => get_option('inboxly_chat_single_agent_enabled', true),
             'agentName' => get_option('inboxly_chat_agent_name', 'Megan Support'),
             'agentEmail' => get_option('inboxly_chat_agent_email', 'support@inboxly.com'),
+            'agentCode' => get_option('inboxly_chat_agent_code', ''),
         );
 
         wp_localize_script('inboxly-chat-app', 'InboxlyChat', array(
@@ -165,6 +165,10 @@ class Inboxly_Chat_Main {
 
     public function output_chat_widget() {
         if (!is_user_logged_in()) {
+            return;
+        }
+
+        if (!trim((string) get_option('inboxly_chat_agent_code', ''))) {
             return;
         }
 
@@ -228,8 +232,10 @@ class Inboxly_Chat_Main {
         $product_ids = get_post_meta($post->ID, '_inboxly_chat_product_ids', true);
         $context = get_post_meta($post->ID, '_inboxly_chat_context', true);
         $backend_conversation = get_post_meta($post->ID, '_inboxly_chat_backend_conversation_id', true);
+        $agent_code = get_post_meta($post->ID, '_inboxly_chat_agent_code', true);
 
         echo '<p><strong>' . __('Context', 'inboxly-chat') . ':</strong> ' . esc_html($context ?: __('General', 'inboxly-chat')) . '</p>';
+        echo '<p><strong>' . __('Agent Code', 'inboxly-chat') . ':</strong> ' . esc_html($agent_code ?: __('Unassigned', 'inboxly-chat')) . '</p>';
         echo '<p><strong>' . __('Order ID', 'inboxly-chat') . ':</strong> ' . esc_html($order_id ?: __('None', 'inboxly-chat')) . '</p>';
         echo '<p><strong>' . __('Product IDs', 'inboxly-chat') . ':</strong> ' . esc_html(is_array($product_ids) ? implode(', ', $product_ids) : $product_ids) . '</p>';
         echo '<p><strong>' . __('Backend Conversation', 'inboxly-chat') . ':</strong> ' . esc_html($backend_conversation ?: __('Not created', 'inboxly-chat')) . '</p>';
@@ -262,6 +268,8 @@ class Inboxly_Chat_Main {
             'product_ids' => $product_ids,
             'product_names' => $product_names,
             'context' => 'order',
+            'context_text' => sprintf(__('Order total: %s', 'inboxly-chat'), wc_price($order->get_total())),
+            'agent_code' => get_option('inboxly_chat_agent_code', ''),
         ));
 
         if ($session_id) {
@@ -278,6 +286,7 @@ class Inboxly_Chat_Main {
             'product_names' => array(),
             'context' => 'general',
             'context_text' => '',
+            'agent_code' => get_option('inboxly_chat_agent_code', ''),
         );
 
         $args = wp_parse_args($args, $defaults);
@@ -300,6 +309,7 @@ class Inboxly_Chat_Main {
         update_post_meta($post_id, '_inboxly_chat_product_names', array_map('sanitize_text_field', (array) $args['product_names']));
         update_post_meta($post_id, '_inboxly_chat_context', sanitize_text_field($args['context']));
         update_post_meta($post_id, '_inboxly_chat_context_text', sanitize_textarea_field($args['context_text']));
+        update_post_meta($post_id, '_inboxly_chat_agent_code', sanitize_text_field($args['agent_code']));
 
         return $post_id;
     }

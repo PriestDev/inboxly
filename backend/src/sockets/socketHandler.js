@@ -51,6 +51,12 @@ const socketHandler = (io) => {
       try {
         const { conversationId, content, messageType, attachments } = data;
 
+        const conversation = await Conversation.findById(conversationId);
+        if (!conversation) {
+          socket.emit('error', { message: 'Conversation not found' });
+          return;
+        }
+
         const user = await User.findById(socket.userId);
         const message = new Message({
           conversationId,
@@ -69,8 +75,29 @@ const socketHandler = (io) => {
         });
         await message.populate('senderId', 'username avatar');
 
-        // Broadcast to conversation room
-        io.to(`conversation_${conversationId}`).emit('new_message', {
+        const recipientIds = new Set();
+
+        if (conversation.assignedAgent) {
+          recipientIds.add(conversation.assignedAgent.toString());
+        }
+
+        if (Array.isArray(conversation.assignedAgentIds)) {
+          conversation.assignedAgentIds.forEach((agentId) => {
+            if (agentId) {
+              recipientIds.add(agentId.toString());
+            }
+          });
+        }
+
+        if (recipientIds.size === 0) {
+          conversation.participants
+            .filter((participant) => ['agent', 'admin'].includes(participant.role))
+            .forEach((participant) => {
+              recipientIds.add(participant.userId.toString());
+            });
+        }
+
+        const payload = {
           _id: message._id,
           conversationId: conversationId.toString(),
           senderId: message.senderId ? message.senderId.toString() : null,
@@ -81,6 +108,10 @@ const socketHandler = (io) => {
           attachments,
           createdAt: message.createdAt,
           readBy: []
+        };
+
+        recipientIds.forEach((recipientId) => {
+          io.to(`user_${recipientId}`).emit('new_message', payload);
         });
       } catch (error) {
         console.error('Send message error:', error);

@@ -60,21 +60,21 @@ router.post('/', authenticate, async (req, res) => {
         if (participant.userId) {
           normalizedParticipants.push({
             userId: participant.userId,
-            role: participant.role || 'customer'
+            role: participant.role || 'client'
           });
         }
       });
     }
 
     if (normalizedParticipants.length === 0) {
-      normalizedParticipants.push({ userId: req.userId, role: 'customer' });
+      normalizedParticipants.push({ userId: req.userId, role: 'client' });
       participantIds
         .filter(id => id.toString() !== req.userId)
         .forEach(id => normalizedParticipants.push({ userId: id, role: 'agent' }));
     }
 
     if (!normalizedParticipants.some(p => p.userId.toString() === req.userId)) {
-      normalizedParticipants.unshift({ userId: req.userId, role: 'customer' });
+      normalizedParticipants.unshift({ userId: req.userId, role: 'client' });
     }
 
     const conversationType = ['direct', 'group', 'support'].includes(type) ? type : 'support';

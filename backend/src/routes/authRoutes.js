@@ -24,7 +24,7 @@ router.post('/register', async (req, res) => {
       password,
       firstName,
       lastName,
-      userType: userType || 'customer'
+      userType: userType || 'client'
     });
 
     await user.save();
@@ -122,7 +122,7 @@ router.post('/wp-login', async (req, res) => {
         firstName,
         lastName,
         avatar,
-        userType: 'customer'
+        userType: 'client'
       });
       await user.save();
     } else if (!user.wpUserId) {

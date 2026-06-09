@@ -7,6 +7,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
+const User = require('./models/User');
 
 const chatRoutes = require('./routes/chatRoutes');
 const authRoutes = require('./routes/authRoutes');
@@ -60,6 +61,31 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/inboxly_c
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.log('MongoDB connection error:', err));
 
+const ensureDemoUser = async () => {
+  const demoEmail = 'alice@example.com';
+  const demoPassword = 'password123';
+
+  let demoUser = await User.findOne({ email: demoEmail });
+  if (!demoUser) {
+    demoUser = new User({
+      email: demoEmail,
+      username: 'alicewonder',
+      password: demoPassword,
+      firstName: 'Alice',
+      lastName: 'Wonder',
+      userType: 'client'
+    });
+  } else {
+    demoUser.username = 'alicewonder';
+    demoUser.firstName = 'Alice';
+    demoUser.lastName = 'Wonder';
+    demoUser.userType = 'client';
+    demoUser.password = demoPassword;
+  }
+
+  await demoUser.save();
+};
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -89,6 +115,10 @@ const HOST = process.env.HOST || 'localhost';
 server.listen(PORT, () => {
   console.log(`Server running on http://${HOST}:${PORT}`);
   console.log(`WebSocket server ready for connections`);
+});
+
+ensureDemoUser().catch((error) => {
+  console.error('Failed to seed demo user:', error);
 });
 
 module.exports = server;

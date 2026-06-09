@@ -49,10 +49,12 @@ class Inboxly_Chat_Settings {
         register_setting('inboxly-chat-settings', 'inboxly_chat_widget_position');
         register_setting('inboxly-chat-settings', 'inboxly_chat_widget_primary_color');
         register_setting('inboxly-chat-settings', 'inboxly_chat_widget_secondary_color');
-        register_setting('inboxly-chat-settings', 'inboxly_chat_widget_welcome_message');
         register_setting('inboxly-chat-settings', 'inboxly_chat_single_agent_enabled');
         register_setting('inboxly-chat-settings', 'inboxly_chat_agent_name');
         register_setting('inboxly-chat-settings', 'inboxly_chat_agent_email');
+        register_setting('inboxly-chat-settings', 'inboxly_chat_agent_code', array(
+            'sanitize_callback' => 'sanitize_text_field',
+        ));
     }
 
     public function render_settings_page() {
@@ -69,6 +71,12 @@ class Inboxly_Chat_Settings {
                     <p><?php esc_html_e('Inboxly automatically connects your WordPress site to the chat backend. Use this page to customize widget behavior, colors, and messaging.', 'inboxly-chat'); ?></p>
                 </div>
             </div>
+
+            <?php if (!trim((string) get_option('inboxly_chat_agent_code', ''))) : ?>
+                <div class="notice notice-warning inline">
+                    <p><?php esc_html_e('Copy your agent code from the Inboxly dashboard and paste it below to complete the widget connection.', 'inboxly-chat'); ?></p>
+                </div>
+            <?php endif; ?>
 
             <form action="options.php" method="post">
                 <?php
@@ -123,15 +131,6 @@ class Inboxly_Chat_Settings {
                                 <input type="color" id="widget_secondary_color" name="inboxly_chat_widget_secondary_color" 
                                        value="<?php echo esc_attr(get_option('inboxly_chat_widget_secondary_color')); ?>" />
                                 <p class="description"><?php esc_html_e('Secondary accent color for buttons and badges.', 'inboxly-chat'); ?></p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">
-                                <label for="widget_welcome_message"><?php esc_html_e('Welcome message', 'inboxly-chat'); ?></label>
-                            </th>
-                            <td>
-                                <textarea id="widget_welcome_message" name="inboxly_chat_widget_welcome_message" rows="3" class="large-text"><?php echo esc_textarea(get_option('inboxly_chat_widget_welcome_message')); ?></textarea>
-                                <p class="description"><?php esc_html_e('Friendly introductory text shown inside the chat widget.', 'inboxly-chat'); ?></p>
                             </td>
                         </tr>
                         <tr>
@@ -191,6 +190,17 @@ class Inboxly_Chat_Settings {
                                 <p class="description"><?php esc_html_e('Email address used for agent notifications and contact follow-up.', 'inboxly-chat'); ?></p>
                             </td>
                         </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="agent_code_settings"><?php esc_html_e('Agent code', 'inboxly-chat'); ?></label>
+                            </th>
+                            <td>
+                                <input type="text" id="agent_code_settings" name="inboxly_chat_agent_code" 
+                                       value="<?php echo esc_attr(get_option('inboxly_chat_agent_code')); ?>"
+                                       class="regular-text" required />
+                                <p class="description"><?php esc_html_e('Paste the agent code from your Inboxly dashboard to connect this widget instance.', 'inboxly-chat'); ?></p>
+                            </td>
+                        </tr>
                     </table>
                 </div>
                 <?php submit_button(); ?>
@@ -221,6 +231,7 @@ class Inboxly_Chat_Settings {
                         <th><?php esc_html_e('Session ID', 'inboxly-chat'); ?></th>
                         <th><?php esc_html_e('Title', 'inboxly-chat'); ?></th>
                         <th><?php esc_html_e('Context', 'inboxly-chat'); ?></th>
+                           <th><?php esc_html_e('Agent Code', 'inboxly-chat'); ?></th>
                         <th><?php esc_html_e('Order', 'inboxly-chat'); ?></th>
                         <th><?php esc_html_e('Products', 'inboxly-chat'); ?></th>
                         <th><?php esc_html_e('Backend Conv.', 'inboxly-chat'); ?></th>
@@ -230,13 +241,14 @@ class Inboxly_Chat_Settings {
                 <tbody>
                     <?php if (empty($sessions)) : ?>
                         <tr>
-                            <td colspan="7"><?php esc_html_e('No chat sessions found.', 'inboxly-chat'); ?></td>
+                                <td colspan="8"><?php esc_html_e('No chat sessions found.', 'inboxly-chat'); ?></td>
                         </tr>
                     <?php else : ?>
                         <?php foreach ($sessions as $session) :
                             $order_id = get_post_meta($session->ID, '_inboxly_chat_order_id', true);
                             $product_ids = get_post_meta($session->ID, '_inboxly_chat_product_ids', true);
                             $backend_conv = get_post_meta($session->ID, '_inboxly_chat_backend_conversation_id', true);
+                               $agent_code = get_post_meta($session->ID, '_inboxly_chat_agent_code', true);
                             $context = get_post_meta($session->ID, '_inboxly_chat_context', true) ?: __('General', 'inboxly-chat');
                             $edit_link = get_edit_post_link($session->ID);
                         ?>
@@ -244,6 +256,7 @@ class Inboxly_Chat_Settings {
                                 <td><?php echo esc_html($session->ID); ?></td>
                                 <td><?php echo esc_html(get_the_title($session->ID)); ?></td>
                                 <td><?php echo esc_html($context); ?></td>
+                                   <td><?php echo esc_html($agent_code ?: __('Unassigned', 'inboxly-chat')); ?></td>
                                 <td>
                                     <?php if ($order_id) : ?>
                                         <?php if (function_exists('wc_get_order')) : ?>
@@ -300,11 +313,12 @@ class Inboxly_Chat_Settings {
                 <div>
                     <p class="page-eyebrow"><?php esc_html_e('Getting started', 'inboxly-chat'); ?></p>
                     <h1><?php esc_html_e('Welcome to Inboxly', 'inboxly-chat'); ?></h1>
-                    <p><?php esc_html_e("Set up Inboxly chat on your site in just 2 steps. Connection happens automatically.", 'inboxly-chat'); ?></p>
+                    <p><?php esc_html_e('Set up Inboxly chat on your site in just a few steps. Finish the connection in Settings by pasting your agent code from the dashboard.', 'inboxly-chat'); ?></p>
                 </div>
             </div>
 
-            <div class="panel-grid">
+            <form action="options.php" method="post" class="panel-grid">
+                <?php settings_fields('inboxly-chat-settings'); ?>
                 <section class="panel-card onboarding-step">
                     <div class="step-number">1</div>
                     <h3><?php esc_html_e('Copy the shortcode', 'inboxly-chat'); ?></h3>
@@ -318,16 +332,17 @@ class Inboxly_Chat_Settings {
 
                 <section class="panel-card onboarding-step">
                     <div class="step-number">2</div>
-                    <h3><?php esc_html_e('Customize your chat', 'inboxly-chat'); ?></h3>
-                    <p><?php esc_html_e("Visit the Settings page to customize widget colors, position, welcome message, and other preferences.", 'inboxly-chat'); ?></p>
+                    <h3><?php esc_html_e('Complete connection', 'inboxly-chat'); ?></h3>
+                    <p><?php esc_html_e('Open Settings to paste your agent code and finish connecting the widget to your Inboxly dashboard.', 'inboxly-chat'); ?></p>
                     <a href="<?php echo esc_url(admin_url('admin.php?page=inboxly-chat-settings')); ?>" class="button button-secondary" style="margin-top:1.5rem;"><?php esc_html_e('Go to Settings', 'inboxly-chat'); ?></a>
                 </section>
-            </div>
+            </form>
 
             <section class="panel-card">
                 <h2><?php esc_html_e("How it works", 'inboxly-chat'); ?></h2>
                 <ul class="checklist" style="list-style:disc; padding-left:1.5rem;">
                     <li><?php esc_html_e("Once you add the shortcode to a page, the chat widget appears for your visitors.", 'inboxly-chat'); ?></li>
+                    <li><?php esc_html_e("Paste your agent code in Settings to complete the widget connection.", 'inboxly-chat'); ?></li>
                     <li><?php esc_html_e("Your Inboxly dashboard automatically detects the connection when visitors start chatting.", 'inboxly-chat'); ?></li>
                     <li><?php esc_html_e("Your support team can respond to chats directly from the Inboxly dashboard.", 'inboxly-chat'); ?></li>
                     <li><?php esc_html_e("Chat history syncs automatically between WordPress and Inboxly.", 'inboxly-chat'); ?></li>

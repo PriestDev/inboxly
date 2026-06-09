@@ -246,6 +246,7 @@ class Inboxly_Chat_REST_API {
             'product_ids' => $product_ids,
             'context' => $context,
             'context_text' => $context_text,
+            'agent_code' => get_option('inboxly_chat_agent_code', ''),
         ));
 
         if (!$session_id) {
@@ -279,6 +280,7 @@ class Inboxly_Chat_REST_API {
             'product_names' => array($product->get_name()),
             'context' => 'product',
             'context_text' => $product->get_description(),
+            'agent_code' => get_option('inboxly_chat_agent_code', ''),
         ));
 
         if (!$session_id) {
@@ -323,6 +325,7 @@ class Inboxly_Chat_REST_API {
             'product_names' => $product_names,
             'context' => 'order',
             'context_text' => sprintf(__('Order total: %s', 'inboxly-chat'), wc_price($order->get_total())),
+            'agent_code' => get_option('inboxly_chat_agent_code', ''),
         ));
 
         if (!$session_id) {
@@ -341,6 +344,7 @@ class Inboxly_Chat_REST_API {
             'product_names' => array(),
             'context' => 'general',
             'context_text' => '',
+            'agent_code' => get_option('inboxly_chat_agent_code', ''),
         );
 
         $args = wp_parse_args($args, $defaults);
@@ -362,6 +366,7 @@ class Inboxly_Chat_REST_API {
         update_post_meta($post_id, '_inboxly_chat_product_ids', array_map('intval', (array) $args['product_ids']));
         update_post_meta($post_id, '_inboxly_chat_product_names', array_map('sanitize_text_field', (array) $args['product_names']));
         update_post_meta($post_id, '_inboxly_chat_context', sanitize_text_field($args['context']));
+        update_post_meta($post_id, '_inboxly_chat_agent_code', sanitize_text_field($args['agent_code']));
 
         return $post_id;
     }
@@ -376,6 +381,7 @@ class Inboxly_Chat_REST_API {
             'product_ids' => (array) get_post_meta($session->ID, '_inboxly_chat_product_ids', true),
             'product_names' => (array) get_post_meta($session->ID, '_inboxly_chat_product_names', true),
             'context' => get_post_meta($session->ID, '_inboxly_chat_context', true),
+            'agent_code' => get_post_meta($session->ID, '_inboxly_chat_agent_code', true),
             'created_at' => get_post_field('post_date', $session->ID),
         );
     }

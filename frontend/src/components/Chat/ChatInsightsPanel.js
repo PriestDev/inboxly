@@ -82,7 +82,9 @@ const ChatInsightsPanel = ({ visitor, agent, widgetSettings, notifications, offl
           <div className="p-4 text-white" style={{ background: widgetSettings.primaryColor }}>
             <p className="text-sm uppercase tracking-[0.3em] opacity-90">Widget preview</p>
             <h4 className="mt-3 text-lg font-semibold">{widgetSettings.title}</h4>
-            <p className="mt-2 text-sm opacity-90">{widgetSettings.welcomeMessage}</p>
+            {widgetSettings.welcomeMessage ? (
+              <p className="mt-2 text-sm opacity-90">{widgetSettings.welcomeMessage}</p>
+            ) : null}
           </div>
           <div className="grid grid-cols-2 gap-3 p-4 bg-slate-50 text-sm text-slate-600 dark:bg-slate-900 dark:text-slate-300">
             <div className="rounded-2xl bg-white p-3 dark:bg-slate-800">

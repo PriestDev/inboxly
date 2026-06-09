@@ -30,11 +30,12 @@ const LoginPage = () => {
     try {
       const response = await authService.login(formData);
       setToken(response.data.token);
-      setUser(response.data.user);
+      const currentUserResponse = await authService.getCurrentUser();
+      setUser(currentUserResponse.data);
       addNotification({
         type: 'success',
         title: 'Welcome back!',
-        message: `Logged in as ${response.data.user.username}`
+        message: `Logged in as ${currentUserResponse.data.username}`
       });
       navigate('/chat');
     } catch (err) {
@@ -74,7 +75,7 @@ const LoginPage = () => {
           <h1 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Inboxly Chat
           </h1>
-          <p className={`mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+          <p className={`mt-2 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
             Connect in real-time
           </p>
         </div>
@@ -107,7 +108,7 @@ const LoginPage = () => {
                 ? 'bg-gray-700 border-gray-600'
                 : 'bg-gray-50 border-gray-300'
             }`}>
-              <FiMail className={isDark ? 'text-gray-400' : 'text-gray-400'} />
+              <FiMail className={isDark ? 'text-slate-300' : 'text-slate-500'} />
               <input
                 type="email"
                 name="email"
@@ -134,7 +135,7 @@ const LoginPage = () => {
                 ? 'bg-gray-700 border-gray-600'
                 : 'bg-gray-50 border-gray-300'
             }`}>
-              <FiLock className={isDark ? 'text-gray-400' : 'text-gray-400'} />
+              <FiLock className={isDark ? 'text-slate-300' : 'text-slate-500'} />
               <input
                 type="password"
                 name="password"
@@ -171,7 +172,7 @@ const LoginPage = () => {
         </form>
 
         {/* Register Link */}
-        <p className={`text-center mt-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+        <p className={`text-center mt-6 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
           Don't have an account?{' '}
           <Link
             to="/register"
@@ -189,13 +190,13 @@ const LoginPage = () => {
             ? 'bg-gray-700 border-gray-600'
             : 'bg-gray-50 border-gray-300'
         }`}>
-          <p className={`text-xs font-semibold mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+          <p className={`text-xs font-semibold mb-2 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
             Demo Credentials
           </p>
-          <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
+          <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
             Email: <span className="font-mono">alice@example.com</span>
           </p>
-          <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
+          <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
             Password: <span className="font-mono">password123</span>
           </p>
         </div>

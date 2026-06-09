@@ -16,7 +16,7 @@ const ProfilePage = () => {
     firstName: '',
     lastName: '',
     avatar: '',
-    userType: 'buyer',
+    userType: 'client',
   });
   const [saving, setSaving] = useState(false);
 
@@ -26,7 +26,7 @@ const ProfilePage = () => {
         firstName: user.firstName || '',
         lastName: user.lastName || '',
         avatar: user.avatar || '',
-        userType: user.userType || 'buyer',
+        userType: user.userType || 'client',
       });
     }
   }, [user]);
@@ -98,7 +98,7 @@ const ProfilePage = () => {
             <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
               {user.firstName} {user.lastName}
             </h2>
-            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
               @{user.username}
             </p>
           </div>
@@ -110,7 +110,7 @@ const ProfilePage = () => {
                 <label className={`block text-sm font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                   Email
                 </label>
-                <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{user.email}</p>
+                  <p className={`${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{user.email}</p>
               </div>
               <div>
                 <label className={`block text-sm font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -189,10 +189,9 @@ const ProfilePage = () => {
                   onChange={handleChange}
                   className={`w-full px-3 py-2 rounded-lg border ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                 >
-                  <option value="buyer">Buyer</option>
-                  <option value="seller">Seller</option>
-                  <option value="designer">Designer</option>
+                  <option value="client">Client</option>
                   <option value="agent">Support Agent</option>
+                  <option value="admin">Admin</option>
                 </select>
               </div>
               <button

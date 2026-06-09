@@ -58,12 +58,12 @@ const ChatWindow = ({ conversation, socket }) => {
   }, [conversation, socket, setMessages, addNotification]);
 
   useEffect(() => {
-    const scrollToBottom = () => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
+    const frameId = window.requestAnimationFrame(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' });
+    });
 
-    scrollToBottom();
-  }, [messages]);
+    return () => window.cancelAnimationFrame(frameId);
+  }, [messages.length, loading]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -137,7 +137,7 @@ const ChatWindow = ({ conversation, socket }) => {
       {/* Messages */}
       <div className={`flex-1 overflow-y-auto p-4 space-y-4 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
         {messages.length === 0 ? (
-          <div className={`text-center mt-8 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+          <div className={`text-center mt-8 ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>
             <div className="text-4xl mb-2">💬</div>
             <p>Start the conversation!</p>
           </div>
@@ -145,7 +145,7 @@ const ChatWindow = ({ conversation, socket }) => {
           messages.map((message) => {
             const senderId = message.senderId?._id || message.senderId?.id || message.senderId;
             const isMine = currentUser?._id?.toString() === senderId?.toString();
-            const senderName = message.senderId?.username || message.senderName || 'You';
+            const senderName = isMine ? 'You' : (message.senderId?.username || message.senderName || 'Support');
 
             return (
               <div
@@ -159,7 +159,7 @@ const ChatWindow = ({ conversation, socket }) => {
                     {senderName?.[0]?.toUpperCase() || '?'}
                   </div>
                   <div className={`max-w-[22rem] sm:max-w-xl ${isMine ? 'text-right' : 'text-left'}`}>
-                    <div className={`text-xs font-semibold mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <div className={`text-xs font-semibold mb-1 ${isDark ? 'text-slate-200' : 'text-slate-600'}`}>
                       {isMine ? 'You' : senderName}
                     </div>
                     <div className={`rounded-2xl p-3 shadow-sm ${
@@ -170,7 +170,7 @@ const ChatWindow = ({ conversation, socket }) => {
                         : 'bg-white text-gray-900'
                     }`}>
                       <p className="break-words text-sm">{message.content}</p>
-                      <div className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <div className={`text-xs mt-1 ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>
                         {formatDistanceToNow(new Date(message.timestamp || message.createdAt), {
                           addSuffix: true,
                         })}
@@ -185,7 +185,7 @@ const ChatWindow = ({ conversation, socket }) => {
 
         {/* Typing Indicator */}
         {typingUsers.length > 0 && (
-          <div className={`flex items-center space-x-2 text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+          <div className={`flex items-center space-x-2 text-sm ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>
             <div className="flex space-x-1">
               <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
               <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></span>

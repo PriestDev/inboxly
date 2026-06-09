@@ -208,7 +208,7 @@ export const mockSupportAgent = {
 
 export const mockWidgetSettings = {
   title: 'Live chat support',
-  welcomeMessage: 'Hi there! Ask me anything about orders, pricing, or product details.',
+  welcomeMessage: '',
   position: 'bottom-right',
   primaryColor: '#0b74f9',
   secondaryColor: '#6d28d9',

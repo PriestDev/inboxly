@@ -20,7 +20,7 @@ const RegisterPage = () => {
     confirmPassword: '',
     firstName: '',
     lastName: '',
-    userType: 'buyer',
+    userType: 'client',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -51,11 +51,12 @@ const RegisterPage = () => {
       const { confirmPassword, ...data } = formData;
       const response = await authService.register(data);
       setToken(response.data.token);
-      setUser(response.data.user);
+      const currentUserResponse = await authService.getCurrentUser();
+      setUser(currentUserResponse.data);
       addNotification({
         type: 'success',
         title: 'Welcome!',
-        message: `Account created for ${response.data.user.username}`
+        message: `Account created for ${currentUserResponse.data.username}`
       });
       navigate('/chat');
     } catch (err) {
@@ -95,7 +96,7 @@ const RegisterPage = () => {
           <h1 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Join Inboxly
           </h1>
-          <p className={`mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+          <p className={`mt-2 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
             Create your account today
           </p>
         </div>
@@ -170,7 +171,7 @@ const RegisterPage = () => {
                 ? 'bg-gray-700 border-gray-600'
                 : 'bg-gray-50 border-gray-300'
             }`}>
-              <FiMail className={isDark ? 'text-gray-400' : 'text-gray-400'} />
+              <FiMail className={isDark ? 'text-slate-300' : 'text-slate-500'} />
               <input
                 type="email"
                 name="email"
@@ -197,7 +198,7 @@ const RegisterPage = () => {
                 ? 'bg-gray-700 border-gray-600'
                 : 'bg-gray-50 border-gray-300'
             }`}>
-              <FiUser className={isDark ? 'text-gray-400' : 'text-gray-400'} />
+              <FiUser className={isDark ? 'text-slate-300' : 'text-slate-500'} />
               <input
                 type="text"
                 name="username"
@@ -229,10 +230,9 @@ const RegisterPage = () => {
                   : 'bg-gray-50 border-gray-300 text-gray-900'
               }`}
             >
-              <option value="buyer">Buyer</option>
-              <option value="seller">Seller</option>
-              <option value="designer">Designer</option>
+              <option value="client">Client</option>
               <option value="agent">Support Agent</option>
+              <option value="admin">Admin</option>
             </select>
           </div>
 
@@ -248,7 +248,7 @@ const RegisterPage = () => {
                 ? 'bg-gray-700 border-gray-600'
                 : 'bg-gray-50 border-gray-300'
             }`}>
-              <FiLock className={isDark ? 'text-gray-400' : 'text-gray-400'} />
+              <FiLock className={isDark ? 'text-slate-300' : 'text-slate-500'} />
               <input
                 type="password"
                 name="password"
@@ -275,7 +275,7 @@ const RegisterPage = () => {
                 ? 'bg-gray-700 border-gray-600'
                 : 'bg-gray-50 border-gray-300'
             }`}>
-              <FiLock className={isDark ? 'text-gray-400' : 'text-gray-400'} />
+              <FiLock className={isDark ? 'text-slate-300' : 'text-slate-500'} />
               <input
                 type="password"
                 name="confirmPassword"
@@ -312,7 +312,7 @@ const RegisterPage = () => {
         </form>
 
         {/* Login Link */}
-        <p className={`text-center mt-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+        <p className={`text-center mt-6 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
           Already have an account?{' '}
           <Link
             to="/login"

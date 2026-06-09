@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FiMenu, FiX, FiUser, FiSettings } from 'react-icons/fi';
+import { Link, useNavigate } from 'react-router-dom';
+import { FiMenu, FiX, FiUser, FiSettings, FiBarChart2, FiUsers, FiLayers } from 'react-icons/fi';
 import { useSocket } from '../hooks/useSocket';
 import { chatService } from '../services/api';
 import { useChatStore } from '../context/chatStore';
@@ -66,7 +66,7 @@ const ChatPage = () => {
       <div className={`flex items-center justify-center h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="text-center">
           <div className={`animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4`}></div>
-          <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Loading chats...</p>
+          <p className={isDark ? 'text-slate-300' : 'text-slate-600'}>Loading chats...</p>
         </div>
       </div>
     );
@@ -100,7 +100,7 @@ const ChatPage = () => {
               <h1 className={`mt-3 text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 Inboxly
               </h1>
-              <p className={`mt-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              <p className={`mt-2 text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                 Your polished real-time chat workspace.
               </p>
             </div>
@@ -136,6 +136,34 @@ const ChatPage = () => {
                 Admin
               </button>
             </div>
+
+            <div className={`rounded-3xl border p-4 ${isDark ? 'border-gray-700 bg-gray-900/60' : 'border-gray-200 bg-gray-50'}`}>
+              <p className={`mb-3 text-xs uppercase tracking-[0.28em] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Dashboard shortcuts</p>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { to: '/admin', label: 'Overview', icon: FiLayers },
+                  { to: '/admin/widgets', label: 'Widget setup', icon: FiSettings },
+                  { to: '/admin/analytics', label: 'Analytics', icon: FiBarChart2 },
+                  { to: '/admin/team', label: 'Team', icon: FiUsers },
+                ].map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className={`flex items-center gap-2 rounded-2xl px-3 py-2 text-sm font-semibold transition ${
+                        isDark
+                          ? 'bg-gray-800 text-gray-200 hover:bg-gray-700'
+                          : 'bg-white text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Icon size={15} />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -162,7 +190,7 @@ const ChatPage = () => {
                 <p className={`text-lg font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
                   Select a conversation to start
                 </p>
-                <p className={isDark ? 'text-gray-500' : 'text-gray-500'}>
+                <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
                   Choose from your conversations on the left
                 </p>
               </div>

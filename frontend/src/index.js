@@ -2,12 +2,33 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
-// Suppress a known benign browser error from ResizeObserver in some environments
+const RESIZE_OBSERVER_ERROR = 'ResizeObserver loop completed with undelivered notifications';
+
+const isResizeObserverError = (value) => {
+  if (!value) return false;
+
+  if (typeof value === 'string') {
+    return value.indexOf(RESIZE_OBSERVER_ERROR) !== -1;
+  }
+
+  const message = value.message || value.reason || '';
+  if (typeof message === 'string' && message.indexOf(RESIZE_OBSERVER_ERROR) !== -1) {
+    return true;
+  }
+
+  try {
+    return String(value).indexOf(RESIZE_OBSERVER_ERROR) !== -1;
+  } catch (e) {
+    return false;
+  }
+};
+
+// Suppress a known benign browser error from ResizeObserver in some environments.
 // See: https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver#exceptions
 function suppressResizeObserverError(event) {
   try {
     const msg = event && event.message ? event.message : '';
-    if (msg && msg.indexOf('ResizeObserver loop completed with undelivered notifications') !== -1) {
+    if (msg && msg.indexOf(RESIZE_OBSERVER_ERROR) !== -1) {
       event.stopImmediatePropagation();
       event.preventDefault && event.preventDefault();
       return true;
@@ -17,9 +38,17 @@ function suppressResizeObserverError(event) {
   }
 }
 
-window.addEventListener('error', suppressResizeObserverError);
+const originalConsoleError = console.error;
+console.error = (...args) => {
+  if (args.some((arg) => isResizeObserverError(arg))) {
+    return;
+  }
+  originalConsoleError(...args);
+};
+
+window.addEventListener('error', suppressResizeObserverError, true);
 window.addEventListener('unhandledrejection', (event) => {
-  if (event && event.reason && typeof event.reason === 'string' && event.reason.indexOf('ResizeObserver loop completed with undelivered notifications') !== -1) {
+  if (event && isResizeObserverError(event.reason)) {
     event.preventDefault();
     return true;
   }

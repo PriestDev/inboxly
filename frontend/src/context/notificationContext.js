@@ -3,7 +3,9 @@ import { create } from 'zustand';
 export const useNotificationStore = create((set) => ({
   notifications: [],
   addNotification: (notification) => {
-    const id = Date.now();
+    const id = typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     const newNotification = { ...notification, id };
     set((state) => ({
       notifications: [...state.notifications, newNotification]

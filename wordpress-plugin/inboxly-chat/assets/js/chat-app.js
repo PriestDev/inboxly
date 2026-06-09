@@ -22,12 +22,13 @@
                 position: 'bottom-right',
                 primaryColor: '#0b74f9',
                 secondaryColor: '#6d28d9',
-                welcomeMessage: 'Hi there! Ask me anything about orders, pricing, or product details.',
+                quickReplies: ['Order status', 'Pricing', 'Product details'],
                 offlineEnabled: true,
                 offlineLabel: 'We’re offline now — leave a message and we’ll email you back shortly.',
                 singleAgentEnabled: true,
                 agentName: 'Megan Support',
-                agentEmail: 'support@inboxly.com'
+                agentEmail: 'support@inboxly.com',
+                agentCode: ''
             }, inboxlyConfig.widgetSettings || {});
             this.init();
         }
@@ -78,11 +79,24 @@
             if (chatInput) {
                 chatInput.style.borderColor = this.widgetSettings.secondaryColor;
             }
+        }
 
-            const welcomeMessage = container.querySelector('.inboxly-chat-welcome');
-            if (welcomeMessage) {
-                welcomeMessage.textContent = this.widgetSettings.welcomeMessage;
-            }
+        escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        getQuickReplies() {
+            const fallbackReplies = ['Order status', 'Pricing', 'Product details'];
+            const configuredReplies = Array.isArray(this.widgetSettings.quickReplies)
+                ? this.widgetSettings.quickReplies.filter((reply) => typeof reply === 'string' && reply.trim())
+                : [];
+
+            return (configuredReplies.length >= 3 ? configuredReplies : fallbackReplies).slice(0, 3);
         }
 
         getConversationType() {
@@ -122,7 +136,11 @@
                         <h3>${window.InboxlyChat.pageContext.type === 'product' ? 'Product Support Chat' : window.InboxlyChat.pageContext.type === 'order' ? 'Order Support Chat' : 'Inboxly'}</h3>
                         <button class="inboxly-chat-close" type="button" aria-label="Close chat">&times;</button>
                     </div>
-                    <div class="inboxly-chat-welcome"></div>
+                    <div class="inboxly-chat-quick-replies" role="group" aria-label="Suggested messages">
+                        ${this.getQuickReplies().map((reply) => `
+                            <button type="button" class="inboxly-chat-quick-reply" data-message="${this.escapeHtml(reply)}">${this.escapeHtml(reply)}</button>
+                        `).join('')}
+                    </div>
                     <div class="inboxly-chat-notice" role="status" aria-live="polite"></div>
                     <div class="inboxly-chat-messages"></div>
                     <div class="inboxly-chat-input">
@@ -355,6 +373,7 @@
                     type: conversationType,
                     title: payload.title,
                     subject: payload.subject,
+                    agentCode: this.widgetSettings.agentCode || ''
                 })
             })
             .then(async (res) => {
@@ -398,6 +417,7 @@
         attachEventListeners() {
             const inputElement = document.querySelector('.inboxly-chat-input input');
             const sendButton = document.querySelector('.inboxly-chat-input button');
+            const quickReplyButtons = document.querySelectorAll('.inboxly-chat-quick-reply');
 
             if (sendButton) {
                 sendButton.addEventListener('click', async () => {
@@ -407,6 +427,20 @@
                     inputElement.value = '';
                 });
             }
+
+            quickReplyButtons.forEach((button) => {
+                button.addEventListener('click', async () => {
+                    if (!inputElement) return;
+
+                    const quickReply = button.getAttribute('data-message');
+                    if (!quickReply) return;
+
+                    inputElement.value = quickReply;
+                    this.clearError();
+                    await this.sendMessage(quickReply);
+                    inputElement.value = '';
+                });
+            });
 
             if (inputElement) {
                 inputElement.addEventListener('keypress', async (e) => {
@@ -491,7 +525,9 @@
 
             const senderId = (typeof message.senderId === 'object' && message.senderId) ? (message.senderId._id || message.senderId.id || message.senderId) : message.senderId;
             const isOwnMessage = senderId === this.userId;
-            const senderName = message.senderName || (isOwnMessage ? (window.InboxlyChat.userName || 'You') : (this.assignedAgent?.username || this.widgetSettings.agentName || 'Support'));
+            const senderName = isOwnMessage
+                ? 'You'
+                : (message.senderName || this.assignedAgent?.username || this.widgetSettings.agentName || 'Support');
 
             const messageElement = document.createElement('div');
             messageElement.className = 'inboxly-chat-message ' + (isOwnMessage ? 'sent' : 'received');

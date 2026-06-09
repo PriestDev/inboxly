@@ -26,14 +26,14 @@ const NotificationCenter = () => {
             <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
               {notification.title}
             </p>
-            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
               {notification.message}
             </p>
           </div>
           <button
             onClick={() => removeNotification(notification.id)}
             className={`p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition ${
-              isDark ? 'text-gray-400' : 'text-gray-600'
+              isDark ? 'text-slate-300' : 'text-slate-600'
             }`}
           >
             <FiX size={18} />

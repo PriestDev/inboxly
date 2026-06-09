@@ -42,7 +42,7 @@ const ChatList = ({ conversations, onSelectConversation, currentConversation }) 
         <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
           isDark ? 'bg-gray-700' : 'bg-gray-100'
         }`}>
-          <FiSearch size={18} className={isDark ? 'text-gray-400' : 'text-gray-600'} />
+          <FiSearch size={18} className={isDark ? 'text-slate-300' : 'text-slate-600'} />
           <input
             type="text"
             placeholder="Search conversations..."
@@ -58,7 +58,7 @@ const ChatList = ({ conversations, onSelectConversation, currentConversation }) 
       {/* Conversations List */}
       <div className={`flex-1 overflow-y-auto ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
         {filteredConversations.length === 0 ? (
-          <div className={`p-8 text-center ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+          <div className={`p-8 text-center ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>
             <div className="text-4xl mb-2">🔍</div>
             <p className="text-sm">
               {searchTerm ? 'No conversations found' : 'No conversations yet'}
@@ -109,7 +109,7 @@ const ChatList = ({ conversations, onSelectConversation, currentConversation }) 
                     </p>
 
                     <p className={`text-xs mt-1 ${
-                      isDark ? 'text-gray-500' : 'text-gray-500'
+                      isDark ? 'text-slate-300' : 'text-slate-500'
                     }`}>
                       {formatDistanceToNow(new Date(conversation.lastActivityAt), {
                         addSuffix: true,
