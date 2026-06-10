@@ -51,12 +51,11 @@ const RegisterPage = () => {
       const { confirmPassword, ...data } = formData;
       const response = await authService.register(data);
       setToken(response.data.token);
-      const currentUserResponse = await authService.getCurrentUser();
-      setUser(currentUserResponse.data);
+      setUser(response.data.user);
       addNotification({
         type: 'success',
         title: 'Welcome!',
-        message: `Account created for ${currentUserResponse.data.username}`
+        message: `Account created for ${response.data.user.username}`
       });
       navigate('/chat');
     } catch (err) {

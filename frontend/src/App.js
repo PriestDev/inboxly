@@ -15,6 +15,7 @@ import WidgetSettingsPage from './pages/WidgetSettingsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import TeamPage from './pages/TeamPage';
 import NotificationCenter from './components/NotificationCenter';
+import SiteFooter from './components/SiteFooter';
 import './styles/index.css';
 
 function App() {
@@ -100,6 +101,7 @@ function App() {
             element={token ? <Navigate to="/chat" /> : <LandingPage />}
           />
         </Routes>
+        <SiteFooter />
       </div>
     </Router>
   );

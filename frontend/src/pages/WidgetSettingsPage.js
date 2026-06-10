@@ -1,11 +1,66 @@
-import React from 'react';
-import { FiCode, FiLink, FiMousePointer, FiShield, FiToggleLeft } from 'react-icons/fi';
+import React, { useEffect, useState } from 'react';
+import { FiCode, FiCopy, FiLink, FiMousePointer, FiRotateCcw, FiSave, FiShield, FiToggleLeft } from 'react-icons/fi';
 import DashboardShell, { DashboardActionLink } from '../components/DashboardShell';
 import { useThemeStore } from '../context/themeContext';
-import { mockWidgetSettings, mockOfflineContact } from '../data/mockData';
+import { useNotificationStore } from '../context/notificationContext';
+import { useDemoWorkspaceStore } from '../context/demoWorkspaceStore';
+import { mockOfflineContact } from '../data/mockData';
 
 const WidgetSettingsPage = () => {
   const { isDark } = useThemeStore();
+  const { widgetSettings, updateWidgetSettings, resetDemoWorkspace } = useDemoWorkspaceStore();
+  const { addNotification } = useNotificationStore();
+  const [formData, setFormData] = useState(widgetSettings);
+
+  useEffect(() => {
+    setFormData(widgetSettings);
+  }, [widgetSettings]);
+
+  const handleChange = (event) => {
+    const { name, value, type, checked } = event.target;
+
+    setFormData((previous) => ({
+      ...previous,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  };
+
+  const handleSave = () => {
+    updateWidgetSettings(formData);
+    addNotification({
+      type: 'success',
+      title: 'Widget saved',
+      message: 'Your demo settings were updated locally',
+    });
+  };
+
+  const handleCopySnippet = async () => {
+    const snippet = `<script data-inboxly-agent-code="demo-agent-code" src="https://cdn.inboxly.test/widget.js"></script>`;
+
+    try {
+      await navigator.clipboard.writeText(snippet);
+      addNotification({
+        type: 'success',
+        title: 'Copied',
+        message: 'Demo widget snippet copied to clipboard',
+      });
+    } catch (error) {
+      addNotification({
+        type: 'error',
+        title: 'Copy failed',
+        message: 'Clipboard access is unavailable in this browser session',
+      });
+    }
+  };
+
+  const handleReset = () => {
+    resetDemoWorkspace();
+    addNotification({
+      type: 'info',
+      title: 'Reset complete',
+      message: 'Demo widget settings were restored',
+    });
+  };
 
   const checklist = [
     'Copy the agent code from your WordPress plugin dashboard.',
@@ -42,22 +97,30 @@ const WidgetSettingsPage = () => {
             <DashboardActionLink to="/admin/team" primary>
               Team setup
             </DashboardActionLink>
+            <button
+              type="button"
+              onClick={handleCopySnippet}
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:border-sky-300 hover:text-sky-700"
+            >
+              <FiCopy size={16} />
+              Copy code
+            </button>
           </div>
         </section>
 
         <section className={`rounded-3xl border p-6 shadow-sm ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white'}`}>
           <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>Widget preview</h2>
           <div className="mt-5 overflow-hidden rounded-[28px] border border-slate-200">
-            <div className="p-5 text-white" style={{ background: mockWidgetSettings.primaryColor }}>
+            <div className="p-5 text-white" style={{ background: formData.primaryColor }}>
               <p className="text-xs uppercase tracking-[0.3em] opacity-80">Inboxly widget</p>
-              <h3 className="mt-2 text-lg font-semibold">{mockWidgetSettings.title}</h3>
-              <p className="mt-2 text-sm opacity-90">{mockWidgetSettings.welcomeMessage || mockOfflineContact.description}</p>
+              <h3 className="mt-2 text-lg font-semibold">{formData.title}</h3>
+              <p className="mt-2 text-sm opacity-90">{formData.welcomeMessage || mockOfflineContact.description}</p>
             </div>
             <div className={`${isDark ? 'bg-slate-950' : 'bg-slate-50'} p-5`}>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className={`rounded-2xl p-4 ${isDark ? 'bg-white/5' : 'bg-white'}`}>
                   <p className={isDark ? 'text-xs uppercase tracking-[0.25em] text-slate-300' : 'text-xs uppercase tracking-[0.25em] text-slate-500'}>Position</p>
-                  <p className="mt-2 font-semibold">{mockWidgetSettings.position}</p>
+                  <p className="mt-2 font-semibold">{formData.position}</p>
                 </div>
                 <div className={`rounded-2xl p-4 ${isDark ? 'bg-white/5' : 'bg-white'}`}>
                   <p className={isDark ? 'text-xs uppercase tracking-[0.25em] text-slate-300' : 'text-xs uppercase tracking-[0.25em] text-slate-500'}>Offline state</p>
@@ -71,14 +134,116 @@ const WidgetSettingsPage = () => {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            <div className={`rounded-2xl border p-4 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
-              <p className={isDark ? 'text-xs uppercase tracking-[0.25em] text-slate-300' : 'text-xs uppercase tracking-[0.25em] text-slate-500'}>Color system</p>
-              <p className="mt-2 text-sm leading-6">Primary and secondary colors drive the launcher, chat header, buttons, and offline states.</p>
+          <div className="mt-6 space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className={`rounded-2xl border p-4 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
+                <span className={isDark ? 'text-xs uppercase tracking-[0.25em] text-slate-300' : 'text-xs uppercase tracking-[0.25em] text-slate-500'}>Widget title</span>
+                <input
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none ${isDark ? 'border-white/10 bg-slate-950/70 text-white' : 'border-slate-200 bg-white text-slate-900'}`}
+                />
+              </label>
+              <label className={`rounded-2xl border p-4 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
+                <span className={isDark ? 'text-xs uppercase tracking-[0.25em] text-slate-300' : 'text-xs uppercase tracking-[0.25em] text-slate-500'}>Widget position</span>
+                <select
+                  name="position"
+                  value={formData.position}
+                  onChange={handleChange}
+                  className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none ${isDark ? 'border-white/10 bg-slate-950/70 text-white' : 'border-slate-200 bg-white text-slate-900'}`}
+                >
+                  <option value="bottom-right">Bottom right</option>
+                  <option value="bottom-left">Bottom left</option>
+                </select>
+              </label>
             </div>
-            <div className={`rounded-2xl border p-4 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
-              <p className={isDark ? 'text-xs uppercase tracking-[0.25em] text-slate-300' : 'text-xs uppercase tracking-[0.25em] text-slate-500'}>Ownership</p>
-              <p className="mt-2 text-sm leading-6">Use the unique agent code to tie each widget installation to one support identity.</p>
+
+            <label className={`block rounded-2xl border p-4 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
+              <span className={isDark ? 'text-xs uppercase tracking-[0.25em] text-slate-300' : 'text-xs uppercase tracking-[0.25em] text-slate-500'}>Welcome message</span>
+              <textarea
+                name="welcomeMessage"
+                value={formData.welcomeMessage}
+                onChange={handleChange}
+                rows={3}
+                className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none ${isDark ? 'border-white/10 bg-slate-950/70 text-white' : 'border-slate-200 bg-white text-slate-900'}`}
+                placeholder="Show a friendly opener for new visitors"
+              />
+            </label>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className={`rounded-2xl border p-4 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
+                <span className={isDark ? 'text-xs uppercase tracking-[0.25em] text-slate-300' : 'text-xs uppercase tracking-[0.25em] text-slate-500'}>Primary color</span>
+                <input
+                  type="color"
+                  name="primaryColor"
+                  value={formData.primaryColor}
+                  onChange={handleChange}
+                  className="mt-2 h-10 w-full rounded-xl border-0 bg-transparent p-0"
+                />
+              </label>
+              <label className={`rounded-2xl border p-4 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
+                <span className={isDark ? 'text-xs uppercase tracking-[0.25em] text-slate-300' : 'text-xs uppercase tracking-[0.25em] text-slate-500'}>Secondary color</span>
+                <input
+                  type="color"
+                  name="secondaryColor"
+                  value={formData.secondaryColor}
+                  onChange={handleChange}
+                  className="mt-2 h-10 w-full rounded-xl border-0 bg-transparent p-0"
+                />
+              </label>
+            </div>
+
+            <label className={`block rounded-2xl border p-4 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
+              <span className={isDark ? 'text-xs uppercase tracking-[0.25em] text-slate-300' : 'text-xs uppercase tracking-[0.25em] text-slate-500'}>Offline text</span>
+              <textarea
+                name="offlineText"
+                value={formData.offlineText}
+                onChange={handleChange}
+                rows={3}
+                className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none ${isDark ? 'border-white/10 bg-slate-950/70 text-white' : 'border-slate-200 bg-white text-slate-900'}`}
+              />
+            </label>
+
+            <div className="grid gap-4 sm:grid-cols-[1fr_160px]">
+              <label className={`rounded-2xl border p-4 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
+                <span className={isDark ? 'text-xs uppercase tracking-[0.25em] text-slate-300' : 'text-xs uppercase tracking-[0.25em] text-slate-500'}>Button text</span>
+                <input
+                  name="buttonText"
+                  value={formData.buttonText}
+                  onChange={handleChange}
+                  className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none ${isDark ? 'border-white/10 bg-slate-950/70 text-white' : 'border-slate-200 bg-white text-slate-900'}`}
+                />
+              </label>
+              <label className={`flex items-center gap-3 rounded-2xl border p-4 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
+                <input
+                  type="checkbox"
+                  name="showAvatar"
+                  checked={formData.showAvatar}
+                  onChange={handleChange}
+                  className="h-4 w-4 rounded border-slate-300 text-sky-500 focus:ring-sky-500"
+                />
+                <span className="text-sm font-medium">Show avatar</span>
+              </label>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={handleSave}
+                className="inline-flex items-center gap-2 rounded-full bg-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-400"
+              >
+                <FiSave size={16} />
+                Save changes
+              </button>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:border-sky-300 hover:text-sky-700"
+              >
+                <FiRotateCcw size={16} />
+                Reset demo
+              </button>
             </div>
           </div>
         </section>

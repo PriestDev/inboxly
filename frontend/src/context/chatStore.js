@@ -8,7 +8,9 @@ export const useChatStore = create((set) => ({
   
   setConversations: (conversations) => set({ conversations }),
   setCurrentConversation: (conversation) => set({ currentConversation: conversation }),
-  setMessages: (messages) => set({ messages }),
+  setMessages: (messages) => set((state) => ({
+    messages: typeof messages === 'function' ? messages(state.messages) : messages,
+  })),
   addMessage: (message) => set((state) => ({
     messages: state.messages.some((m) => m._id === message._id) ? state.messages : [...state.messages, message]
   })),

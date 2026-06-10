@@ -30,12 +30,11 @@ const LoginPage = () => {
     try {
       const response = await authService.login(formData);
       setToken(response.data.token);
-      const currentUserResponse = await authService.getCurrentUser();
-      setUser(currentUserResponse.data);
+      setUser(response.data.user);
       addNotification({
         type: 'success',
         title: 'Welcome back!',
-        message: `Logged in as ${currentUserResponse.data.username}`
+        message: `Logged in as ${response.data.user.username}`
       });
       navigate('/chat');
     } catch (err) {

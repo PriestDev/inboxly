@@ -1,61 +1,35 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FiSend, FiSmile } from 'react-icons/fi';
-import { chatService } from '../../services/api';
-import { useChatStore } from '../../context/chatStore';
 import { useAuthStore } from '../../context/authStore';
 import { useThemeStore } from '../../context/themeContext';
 import { useNotificationStore } from '../../context/notificationContext';
 import { formatDistanceToNow } from 'date-fns';
-import { mockMessages } from '../../data/mockData';
+import { useDemoWorkspaceStore } from '../../context/demoWorkspaceStore';
 
-const ChatWindow = ({ conversation, socket }) => {
+const ChatWindow = ({ conversation }) => {
   const currentUser = useAuthStore((state) => state.user);
-  const { messages, setMessages, typingUsers } = useChatStore();
+  const { messages, sendMessage, receiveMessage, markConversationRead } = useDemoWorkspaceStore();
   const { isDark } = useThemeStore();
   const { addNotification } = useNotificationStore();
   const [messageInput, setMessageInput] = useState('');
-  const [loading, setLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const replyTimeoutRef = useRef(null);
+
+  const conversationMessages = useMemo(
+    () => messages.filter((message) => message.conversationId === conversation._id),
+    [messages, conversation._id]
+  );
 
   useEffect(() => {
-    const loadMessages = async () => {
-      try {
-        setLoading(true);
-        try {
-          const response = await chatService.getMessages(conversation._id);
-          setMessages(response.data);
-          chatService.markAsRead(conversation._id);
-        } catch (err) {
-          const conversationMsgs = mockMessages.filter(
-            (m) => m.conversationId === conversation._id
-          );
-          setMessages(conversationMsgs);
-          addNotification({
-            type: 'info',
-            title: 'Demo Mode',
-            message: 'Showing mock messages'
-          });
-        }
-      } catch (error) {
-        console.error('Failed to load messages:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (conversation) {
-      loadMessages();
-      socket?.emit('join_conversation', conversation._id);
-    }
+    markConversationRead(conversation._id);
 
     return () => {
-      if (conversation) {
-        socket?.emit('leave_conversation', conversation._id);
-      }
+      clearTimeout(typingTimeoutRef.current);
+      clearTimeout(replyTimeoutRef.current);
     };
-  }, [conversation, socket, setMessages, addNotification]);
+  }, [conversation._id, markConversationRead]);
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
@@ -63,64 +37,55 @@ const ChatWindow = ({ conversation, socket }) => {
     });
 
     return () => window.cancelAnimationFrame(frameId);
-  }, [messages.length, loading]);
+  }, [conversationMessages.length]);
 
-  const handleSendMessage = async (e) => {
+  const handleSendMessage = (e) => {
     e.preventDefault();
     if (!messageInput.trim()) return;
 
-    socket?.emit('user_stopped_typing', { conversationId: conversation._id });
     setIsTyping(false);
+    clearTimeout(typingTimeoutRef.current);
 
-    try {
-      const response = await chatService.sendMessage(conversation._id, {
-        content: messageInput,
-        messageType: 'text',
+    const content = messageInput.trim();
+    const senderName = currentUser?.username || 'You';
+
+    sendMessage({
+      conversationId: conversation._id,
+      content,
+      senderId: currentUser?._id || 'agent-demo',
+      senderName,
+    });
+
+    setMessageInput('');
+    addNotification({
+      type: 'success',
+      title: 'Message sent',
+      message: 'Saved to the demo inbox',
+    });
+
+    replyTimeoutRef.current = window.setTimeout(() => {
+      receiveMessage({
+        conversationId: conversation._id,
+        content: `Demo reply: we received "${content.slice(0, 40)}${content.length > 40 ? '…' : ''}"`,
       });
-
-      if (!socket?.connected) {
-        setMessages((prevMessages) => [...prevMessages, response.data]);
-      }
-
-      setMessageInput('');
       addNotification({
-        type: 'success',
-        title: 'Message sent',
-        message: ''
+        type: 'info',
+        title: 'Demo reply received',
+        message: 'The conversation updated locally',
       });
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      addNotification({
-        type: 'error',
-        title: 'Failed to send message',
-        message: error.response?.data?.message || 'Please try again'
-      });
-    }
+    }, 900);
   };
 
   const handleTyping = () => {
     if (!isTyping) {
       setIsTyping(true);
-      socket?.emit('user_typing', { conversationId: conversation._id });
     }
 
     clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
-      socket?.emit('user_stopped_typing', { conversationId: conversation._id });
     }, 2000);
   };
-
-  if (loading) {
-    return (
-      <div className={`flex items-center justify-center h-full ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Loading messages...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className={`flex flex-col h-full ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
@@ -136,13 +101,13 @@ const ChatWindow = ({ conversation, socket }) => {
 
       {/* Messages */}
       <div className={`flex-1 overflow-y-auto p-4 space-y-4 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        {messages.length === 0 ? (
+        {conversationMessages.length === 0 ? (
           <div className={`text-center mt-8 ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>
             <div className="text-4xl mb-2">💬</div>
             <p>Start the conversation!</p>
           </div>
         ) : (
-          messages.map((message) => {
+          conversationMessages.map((message) => {
             const senderId = message.senderId?._id || message.senderId?.id || message.senderId;
             const isMine = currentUser?._id?.toString() === senderId?.toString();
             const senderName = isMine ? 'You' : (message.senderId?.username || message.senderName || 'Support');
@@ -183,8 +148,7 @@ const ChatWindow = ({ conversation, socket }) => {
           })
         )}
 
-        {/* Typing Indicator */}
-        {typingUsers.length > 0 && (
+        {isTyping && (
           <div className={`flex items-center space-x-2 text-sm ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>
             <div className="flex space-x-1">
               <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
@@ -192,7 +156,7 @@ const ChatWindow = ({ conversation, socket }) => {
               <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></span>
             </div>
             <span>
-              {typingUsers.length === 1 ? 'Someone is' : 'Users are'} typing...
+              Typing a demo reply...
             </span>
           </div>
         )}
