@@ -35,4 +35,9 @@ export const chatService = {
   markAsRead: (conversationId) => api.patch(`/chats/${conversationId}/read`),
 };
 
+export const reviewService = {
+  getReviews: () => api.get('/reviews'),
+  createReview: (data) => api.post('/reviews', data),
+};
+
 export default api;

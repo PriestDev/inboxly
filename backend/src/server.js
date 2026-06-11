@@ -13,6 +13,7 @@ const chatRoutes = require('./routes/chatRoutes');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
 const socketHandler = require('./sockets/socketHandler');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -91,6 +92,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/uploads', uploadRoutes);
+app.use('/api/reviews', reviewRoutes);
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Health check

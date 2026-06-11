@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiMenu, FiMinimize2, FiX, FiUser, FiSettings, FiBarChart2, FiUsers, FiLayers } from 'react-icons/fi';
+import { FiX, FiUser, FiSettings, FiBarChart2, FiUsers, FiLayers, FiMoreVertical, FiUserPlus } from 'react-icons/fi';
 import { useDemoWorkspaceStore } from '../context/demoWorkspaceStore';
 import { useThemeStore } from '../context/themeContext';
 import { useNotificationStore } from '../context/notificationContext';
@@ -14,6 +14,7 @@ import { mockVisitors, mockSupportAgent, mockOfflineContact } from '../data/mock
 const ChatPage = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarMenuOpen, setSidebarMenuOpen] = useState(false);
   const {
     conversations,
     selectedConversationId,
@@ -34,6 +35,11 @@ const ChatPage = () => {
   const currentConversation = useMemo(
     () => conversations.find((conversation) => conversation._id === selectedConversationId) || conversations[0] || null,
     [conversations, selectedConversationId]
+  );
+
+  const currentVisitor = useMemo(
+    () => mockVisitors.find((visitor) => visitor.conversationId === currentConversation?._id) || mockVisitors[0],
+    [currentConversation?._id]
   );
 
   useEffect(() => {
@@ -102,113 +108,129 @@ const ChatPage = () => {
     });
   };
 
+  const closeSidebarMenu = () => setSidebarMenuOpen(false);
+
+  const handleSidebarAction = (action) => {
+    closeSidebarMenu();
+    action?.();
+  };
+
+  const handleSelectConversation = (conversation) => {
+    selectConversation(conversation._id);
+
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      setSidebarOpen(false);
+    }
+  };
+
   return (
     <div className={`flex h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <OfflineIndicator />
 
-      <button
-        type="button"
-        onClick={() => navigate('/admin')}
-        className={`fixed top-4 right-4 z-40 inline-flex items-center gap-2 rounded-full border px-4 py-3 text-sm font-semibold shadow-lg transition ${
-          isDark
-            ? 'border-white/10 bg-gray-800 text-white hover:bg-gray-700'
-            : 'border-gray-200 bg-white text-gray-900 hover:bg-gray-50'
-        }`}
-        aria-label="Exit chat view"
-        title="Exit chat view"
-      >
-        <FiMinimize2 size={16} />
-        <span className="hidden sm:inline">Exit chat</span>
-      </button>
-
-      <div className="md:hidden absolute top-4 left-4 z-50">
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className={`p-2 rounded-lg ${isDark ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}
-        >
-          {sidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
-        </button>
-      </div>
-
       <div
         className={`
           ${sidebarOpen ? 'w-full md:w-80' : 'w-0'}
-          transition-all duration-300 ${isDark ? 'bg-gray-800 border-r border-gray-700' : 'bg-white border-r border-gray-200'} overflow-hidden flex flex-col
+          transition-all duration-300 ${isDark ? 'bg-gray-800 border-r border-gray-700' : 'bg-white border-r border-gray-200'} overflow-hidden flex min-h-0 flex-col
         `}
       >
         <div className={`${isDark ? 'bg-slate-950 border-b border-gray-800' : 'bg-white border-b border-gray-200'} p-5`}>
           <div className="flex items-start justify-between gap-4 mb-5">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] font-semibold text-blue-400">Inbox</p>
               <h1 className={`mt-3 text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 Inboxly
               </h1>
-              <p className={`mt-2 text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                Your polished mock chat workspace.
-              </p>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <button
+                type="button"
+                onClick={() => setSidebarMenuOpen((current) => !current)}
+                className={`inline-flex h-10 w-10 items-center justify-center rounded-2xl border transition ${isDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-gray-200 bg-white text-slate-700 hover:bg-slate-50'}`}
+                aria-label="Open sidebar actions"
+                title="Open sidebar actions"
+              >
+                <FiMoreVertical size={16} />
+              </button>
+            </div>
           </div>
-          <div className="space-y-3">
-            <button
-              onClick={handleCreateConversation}
-              className="w-full rounded-3xl bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:opacity-95"
-            >
-              New conversation
-            </button>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => navigate('/profile')}
-                className={`flex items-center justify-center gap-2 rounded-3xl px-3 py-3 text-sm font-semibold transition ${
-                  isDark
-                    ? 'bg-gray-800 hover:bg-gray-700 text-white'
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-                }`}
-              >
-                <FiUser size={16} />
-                Profile
-              </button>
-              <button
-                onClick={() => navigate('/admin')}
-                className={`flex items-center justify-center gap-2 rounded-3xl px-3 py-3 text-sm font-semibold transition ${
-                  isDark
-                    ? 'bg-gray-800 hover:bg-gray-700 text-white'
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-                }`}
-              >
-                <FiSettings size={16} />
-                Admin
-              </button>
-            </div>
 
-            <div className={`rounded-3xl border p-4 ${isDark ? 'border-gray-700 bg-gray-900/60' : 'border-gray-200 bg-gray-50'}`}>
-              <p className={`mb-3 text-xs uppercase tracking-[0.28em] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Dashboard shortcuts</p>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { to: '/admin', label: 'Overview', icon: FiLayers },
-                  { to: '/admin/widgets', label: 'Widget setup', icon: FiSettings },
-                  { to: '/admin/analytics', label: 'Analytics', icon: FiBarChart2 },
-                  { to: '/admin/team', label: 'Team', icon: FiUsers },
-                ].map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.to}
-                      to={item.to}
-                      className={`flex items-center gap-2 rounded-2xl px-3 py-2 text-sm font-semibold transition ${
-                        isDark
-                          ? 'bg-gray-800 text-gray-200 hover:bg-gray-700'
-                          : 'bg-white text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      <Icon size={15} />
-                      {item.label}
-                    </Link>
-                  );
-                })}
+          {sidebarMenuOpen && (
+            <div className="relative">
+              <div className={`absolute right-0 top-0 z-30 w-full rounded-[28px] border p-2 shadow-2xl ${isDark ? 'border-white/10 bg-gray-950' : 'border-gray-200 bg-white'}`}>
+                <div className="flex items-center justify-between px-3 py-2">
+                  <p className={`text-xs font-semibold uppercase tracking-[0.3em] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Actions</p>
+                  <button
+                    type="button"
+                    onClick={closeSidebarMenu}
+                    className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${isDark ? 'text-slate-400 hover:bg-white/10' : 'text-slate-500 hover:bg-slate-100'}`}
+                    aria-label="Close sidebar actions"
+                  >
+                    <FiX size={14} />
+                  </button>
+                </div>
+
+                <div className="space-y-1">
+                  <button
+                    type="button"
+                    onClick={() => handleSidebarAction(handleCreateConversation)}
+                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
+                  >
+                    <FiUserPlus size={15} />
+                    New conversation
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSidebarAction(() => navigate('/profile'))}
+                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
+                  >
+                    <FiUser size={15} />
+                    Profile
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSidebarAction(() => navigate('/admin'))}
+                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
+                  >
+                    <FiSettings size={15} />
+                    Admin
+                  </button>
+                  <div className={`my-2 h-px ${isDark ? 'bg-white/10' : 'bg-slate-200'}`} />
+                  <button
+                    type="button"
+                    onClick={() => handleSidebarAction(() => navigate('/admin'))}
+                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
+                  >
+                    <FiLayers size={15} />
+                    Overview
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSidebarAction(() => navigate('/admin/widgets'))}
+                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
+                  >
+                    <FiSettings size={15} />
+                    Widget setup
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSidebarAction(() => navigate('/admin/analytics'))}
+                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
+                  >
+                    <FiBarChart2 size={15} />
+                    Analytics
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSidebarAction(() => navigate('/admin/team'))}
+                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
+                  >
+                    <FiUsers size={15} />
+                    Team
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         <ChatList
@@ -216,10 +238,7 @@ const ChatPage = () => {
           onCreateConversation={handleCreateConversation}
           onMarkConversationRead={markConversationRead}
           onMarkAllRead={markAllConversationsRead}
-          onSelectConversation={(conversation) => {
-            selectConversation(conversation._id);
-            setSidebarOpen(false);
-          }}
+          onSelectConversation={handleSelectConversation}
           currentConversation={currentConversation}
         />
       </div>
@@ -227,7 +246,11 @@ const ChatPage = () => {
       <div className="flex-1 flex flex-col overflow-hidden xl:flex-row">
         <div className="flex-1 flex flex-col overflow-hidden">
           {currentConversation ? (
-            <ChatWindow conversation={currentConversation} />
+            <ChatWindow
+              conversation={currentConversation}
+              visitor={currentVisitor}
+              onBackToConversations={() => setSidebarOpen(true)}
+            />
           ) : (
             <div className={`flex items-center justify-center h-full ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
               <div className="text-center">
@@ -245,7 +268,7 @@ const ChatPage = () => {
 
         <div className={`hidden xl:flex xl:w-96 flex-col overflow-y-auto ${isDark ? 'bg-gray-950 border-l border-gray-800' : 'bg-white border-l border-gray-200'}`}>
           <ChatInsightsPanel
-            visitor={mockVisitors.find((visitor) => visitor.conversationId === currentConversation?._id) || mockVisitors[0]}
+            visitor={currentVisitor}
             agent={mockSupportAgent}
             widgetSettings={widgetSettings}
             notifications={emailNotifications}

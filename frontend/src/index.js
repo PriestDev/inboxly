@@ -23,20 +23,50 @@ const isResizeObserverError = (value) => {
   }
 };
 
+const getResizeObserverMessage = (event) => {
+  const candidates = [
+    event?.message,
+    event?.error?.message,
+    event?.reason?.message,
+    event?.reason,
+    event?.error,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string' && candidate.indexOf(RESIZE_OBSERVER_ERROR) !== -1) {
+      return candidate;
+    }
+
+    if (candidate && isResizeObserverError(candidate)) {
+      return String(candidate);
+    }
+  }
+
+  return '';
+};
+
 // Suppress a known benign browser error from ResizeObserver in some environments.
 // See: https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver#exceptions
 function suppressResizeObserverError(event) {
   try {
-    const msg = event && event.message ? event.message : '';
+    const msg = getResizeObserverMessage(event);
     if (msg && msg.indexOf(RESIZE_OBSERVER_ERROR) !== -1) {
-      event.stopImmediatePropagation();
       event.preventDefault && event.preventDefault();
+      event.stopImmediatePropagation && event.stopImmediatePropagation();
       return true;
     }
   } catch (e) {
     // ignore
   }
 }
+
+window.onerror = function onWindowError(message, source, lineno, colno, error) {
+  if (isResizeObserverError(message) || isResizeObserverError(error)) {
+    return true;
+  }
+
+  return false;
+};
 
 const originalConsoleError = console.error;
 console.error = (...args) => {

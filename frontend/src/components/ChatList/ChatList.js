@@ -1,12 +1,31 @@
-import React, { useMemo, useState } from 'react';
-import { formatDistanceToNow } from 'date-fns';
-import { FiCheck, FiMessageSquare, FiPlus, FiSearch } from 'react-icons/fi';
+import React, { useMemo, useRef, useState } from 'react';
+import { FiCheck, FiMessageSquare, FiMoreVertical, FiPlus, FiSearch, FiX, FiEye, FiMessageCircle, FiVolume2 } from 'react-icons/fi';
 import { useThemeStore } from '../../context/themeContext';
+
+const formatCompactRelativeTime = (dateValue) => {
+  const timestamp = new Date(dateValue).getTime();
+  const diffMinutes = Math.max(1, Math.floor((Date.now() - timestamp) / 60000));
+
+  if (diffMinutes < 60) {
+    return `${diffMinutes}m`;
+  }
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) {
+    return `${diffHours}h`;
+  }
+
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays}d`;
+};
 
 const ChatList = ({ conversations, onSelectConversation, currentConversation, onCreateConversation, onMarkConversationRead, onMarkAllRead }) => {
   const { isDark } = useThemeStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMode, setFilterMode] = useState('all');
+  const [menuConversation, setMenuConversation] = useState(null);
+  const [isMobileLongPress, setIsMobileLongPress] = useState(false);
+  const longPressTimerRef = useRef(null);
 
   const filteredConversations = useMemo(() => {
     const term = searchTerm.toLowerCase();
@@ -42,8 +61,86 @@ const ChatList = ({ conversations, onSelectConversation, currentConversation, on
     return colors[id?.charCodeAt(0) % colors.length];
   };
 
+  const clearLongPressTimer = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  const openConversationMenu = (conversation) => {
+    setMenuConversation(conversation);
+    setIsMobileLongPress(false);
+  };
+
+  const closeConversationMenu = () => {
+    setMenuConversation(null);
+    setIsMobileLongPress(false);
+  };
+
+  const handleConversationOption = (option) => {
+    if (!menuConversation) {
+      return;
+    }
+
+    if (option === 'mark-read' && onMarkConversationRead) {
+      onMarkConversationRead(menuConversation._id);
+    }
+
+    if (option === 'view-details') {
+      const details = `${menuConversation.title} · ${menuConversation.type || 'thread'} · ${menuConversation.unreadCount || 0} unread`;
+      window.alert(details);
+    }
+
+    if (option === 'mute') {
+      window.alert(`Muted ${menuConversation.title} for demo purposes.`);
+    }
+
+    closeConversationMenu();
+  };
+
+  const startLongPress = (conversation) => {
+    clearLongPressTimer();
+    setIsMobileLongPress(false);
+
+    longPressTimerRef.current = window.setTimeout(() => {
+      setIsMobileLongPress(true);
+      openConversationMenu(conversation);
+    }, 3000);
+  };
+
+  const handleCardPointerDown = (conversation, event) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) {
+      return;
+    }
+
+    if (event.pointerType === 'mouse') {
+      return;
+    }
+
+    startLongPress(conversation);
+  };
+
+  const handleCardPointerUp = () => {
+    clearLongPressTimer();
+  };
+
+  const handleCardClick = (conversation) => {
+    if (isMobileLongPress) {
+      return;
+    }
+
+    onSelectConversation(conversation);
+  };
+
+  const conversationMenuActions = [
+    { key: 'view-details', label: 'View details', icon: FiEye },
+    { key: 'mark-read', label: 'Mark as read', icon: FiMessageCircle },
+    { key: 'mute', label: 'Mute conversation', icon: FiVolume2 },
+  ];
+
   return (
-    <div className={`flex h-full flex-col ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+    <div className={`flex h-full min-h-0 flex-col ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
       <div className={`border-b ${isDark ? 'border-gray-700 bg-slate-950/80' : 'border-gray-200 bg-white'} p-4`}>
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -113,7 +210,7 @@ const ChatList = ({ conversations, onSelectConversation, currentConversation, on
       </div>
 
       {/* Conversations List */}
-      <div className={`flex-1 overflow-y-auto ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+      <div className={`flex-1 min-h-0 overflow-y-auto pb-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
         {filteredConversations.length === 0 ? (
           <div className={`p-8 text-center ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500">
@@ -127,14 +224,18 @@ const ChatList = ({ conversations, onSelectConversation, currentConversation, on
             </p>
           </div>
         ) : (
-          <div className="space-y-2 p-2">
+          <div className="space-y-2 p-2 pb-4">
             {filteredConversations.map((conversation) => (
               <div
                 key={conversation._id}
-                onClick={() => onSelectConversation(conversation)}
+                onClick={() => handleCardClick(conversation)}
+                onPointerDown={(event) => handleCardPointerDown(conversation, event)}
+                onPointerUp={handleCardPointerUp}
+                onPointerCancel={handleCardPointerUp}
+                onPointerLeave={handleCardPointerUp}
                 role="button"
                 tabIndex={0}
-                className={`p-4 rounded-[28px] cursor-pointer transition-all border ${
+                className={`group relative p-3 rounded-[24px] cursor-pointer transition-all border ${
                   currentConversation?._id === conversation._id
                     ? isDark
                       ? 'border-blue-500/40 bg-blue-600/20 shadow-[0_0_0_1px_rgba(96,165,250,0.2)]'
@@ -145,7 +246,7 @@ const ChatList = ({ conversations, onSelectConversation, currentConversation, on
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <div className={`w-12 h-12 rounded-2xl ${getConversationColor(conversation._id)} flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-lg shadow-sky-500/15`}>
+                  <div className={`w-11 h-11 rounded-2xl ${getConversationColor(conversation._id)} flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-lg shadow-sky-500/15`}>
                     {getAvatarInitials(conversation.title)}
                   </div>
 
@@ -160,26 +261,27 @@ const ChatList = ({ conversations, onSelectConversation, currentConversation, on
                         </p>
                       </div>
 
-                      {conversation.unreadCount > 0 ? (
-                        <span className="flex-shrink-0 rounded-full bg-sky-500 px-2.5 py-1 text-xs font-bold text-white">
-                          {conversation.unreadCount}
-                        </span>
-                      ) : (
-                        <span className={`flex-shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${isDark ? 'bg-white/5 text-slate-300' : 'bg-slate-100 text-slate-500'}`}>
-                          Read
-                        </span>
-                      )}
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          openConversationMenu(conversation);
+                        }}
+                        className={`hidden md:inline-flex h-8 w-8 items-center justify-center rounded-full border transition opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto ${isDark ? 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'}`}
+                        aria-label="Conversation options"
+                        title="Conversation options"
+                      >
+                        <FiMoreVertical size={15} />
+                      </button>
                     </div>
 
-                    <p className={`mt-2 truncate text-xs leading-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <p className={`mt-1.5 truncate text-xs leading-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                       {conversation.lastMessage?.content || 'No messages yet'}
                     </p>
 
-                    <div className="mt-3 flex items-center justify-between gap-3">
+                    <div className="mt-2.5 flex items-center justify-between gap-3">
                       <p className={`text-xs ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>
-                        {formatDistanceToNow(new Date(conversation.lastActivityAt), {
-                          addSuffix: true,
-                        })}
+                        {formatCompactRelativeTime(conversation.lastActivityAt)}
                       </p>
 
                       {conversation.unreadCount > 0 && onMarkConversationRead ? (
@@ -205,6 +307,54 @@ const ChatList = ({ conversations, onSelectConversation, currentConversation, on
           </div>
         )}
       </div>
+
+      {menuConversation && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 md:items-center">
+          <button
+            type="button"
+            className="absolute inset-0"
+            aria-label="Close conversation options"
+            onClick={closeConversationMenu}
+          />
+
+          <div className={`relative z-10 w-full max-w-sm rounded-[28px] border p-3 shadow-2xl ${isDark ? 'border-white/10 bg-gray-950' : 'border-gray-200 bg-white'}`}>
+            <div className="mb-2 flex items-start justify-between gap-3 px-2 py-1">
+              <div className="min-w-0">
+                <p className={`text-xs font-semibold uppercase tracking-[0.28em] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Conversation options</p>
+                <h4 className={`mt-2 truncate text-base font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  {menuConversation.title}
+                </h4>
+              </div>
+              <button
+                type="button"
+                onClick={closeConversationMenu}
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${isDark ? 'text-slate-400 hover:bg-white/10' : 'text-slate-500 hover:bg-slate-100'}`}
+                aria-label="Close conversation options"
+              >
+                <FiX size={15} />
+              </button>
+            </div>
+
+            <div className="space-y-1">
+              {conversationMenuActions.map((action) => {
+                const Icon = action.icon;
+
+                return (
+                  <button
+                    key={action.key}
+                    type="button"
+                    onClick={() => handleConversationOption(action.key)}
+                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
+                  >
+                    <Icon size={16} />
+                    {action.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

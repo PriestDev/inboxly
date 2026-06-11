@@ -7,19 +7,20 @@ const SiteFooter = () => {
 
   return (
     <footer className={`border-t ${isDark ? 'border-white/10 bg-slate-950 text-slate-400' : 'border-slate-200 bg-white text-slate-600'}`}>
-      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-sm md:flex-row md:items-center md:justify-between md:px-6">
+      <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-2 px-4 py-5 text-center text-sm md:px-6">
         <p>
-          © {year} Priest Dev. All rights reserved.
+          © {year} {''}
+          <a
+            href="https://github.com/PriestDev"
+            target="_blank"
+            rel="noreferrer"
+            className={`font-semibold transition ${isDark ? 'text-white hover:text-sky-300' : 'text-slate-900 hover:text-sky-700'}`}
+            title="Priest Dev"
+          >
+            Priest Dev
+          </a>
+          . All rights reserved.
         </p>
-        <a
-          href="https://github.com/PriestDev"
-          target="_blank"
-          rel="noreferrer"
-          className={`font-semibold transition ${isDark ? 'text-white hover:text-sky-300' : 'text-slate-900 hover:text-sky-700'}`}
-          title="Priest Dev"
-        >
-          Priest Dev
-        </a>
       </div>
     </footer>
   );

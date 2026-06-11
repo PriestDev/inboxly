@@ -97,6 +97,7 @@ export const useDemoWorkspaceStore = create((set) => {
         content: initialMessage,
         messageType: 'text',
         timestamp,
+        status: 'received',
         readBy: [],
       };
 
@@ -121,6 +122,7 @@ export const useDemoWorkspaceStore = create((set) => {
         content,
         messageType,
         timestamp,
+        status: 'sent',
         readBy: [{ userId: senderId, readAt: timestamp }],
       };
 
@@ -156,6 +158,7 @@ export const useDemoWorkspaceStore = create((set) => {
         content,
         messageType,
         timestamp,
+        status: 'received',
         readBy: [],
       };
 
@@ -183,6 +186,13 @@ export const useDemoWorkspaceStore = create((set) => {
         conversation._id === conversationId
           ? { ...conversation, unreadCount: 0 }
           : conversation
+      )),
+    })),
+    updateMessageStatus: (messageId, updates) => commit((state) => ({
+      messages: state.messages.map((message) => (
+        message._id === messageId
+          ? { ...message, ...updates }
+          : message
       )),
     })),
     markAllConversationsRead: () => commit((state) => ({
