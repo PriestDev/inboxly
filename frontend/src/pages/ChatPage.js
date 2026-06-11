@@ -1,33 +1,30 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { FiX, FiUser, FiSettings, FiBarChart2, FiUsers, FiLayers, FiMoreVertical, FiUserPlus } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+import { FiX, FiUser, FiSettings, FiMoreVertical, FiUserPlus, FiHome, FiMessageSquare, FiUsers, FiTool, FiLink, FiLogOut } from 'react-icons/fi';
 import { useDemoWorkspaceStore } from '../context/demoWorkspaceStore';
 import { useThemeStore } from '../context/themeContext';
 import { useNotificationStore } from '../context/notificationContext';
+import { useAuthStore } from '../context/authStore';
 import ChatList from '../components/ChatList/ChatList';
 import ChatWindow from '../components/ChatWindow/ChatWindow';
 import ThemeToggle from '../components/ThemeToggle';
 import OfflineIndicator from '../components/OfflineIndicator';
 import ChatInsightsPanel from '../components/Chat/ChatInsightsPanel';
-import { mockVisitors, mockSupportAgent, mockOfflineContact } from '../data/mockData';
+import { mockVisitors } from '../data/mockData';
 
 const ChatPage = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarMenuOpen, setSidebarMenuOpen] = useState(false);
+  const [visitorPanelOpen, setVisitorPanelOpen] = useState(false);
+  const logout = useAuthStore((state) => state.logout);
   const {
     conversations,
     selectedConversationId,
     selectConversation,
     createConversation,
-    submitOfflineForm,
-    appendEmailNotification,
-    widgetSettings,
-    emailNotifications,
     markConversationRead,
     markAllConversationsRead,
-    updateWidgetSettings,
-    resetDemoWorkspace,
   } = useDemoWorkspaceStore();
   const { isDark } = useThemeStore();
   const { addNotification } = useNotificationStore();
@@ -86,33 +83,17 @@ const ChatPage = () => {
     });
   };
 
-  const handleOfflineSubmit = (payload) => {
-    const result = submitOfflineForm(payload);
-    addNotification({
-      type: 'success',
-      title: 'Offline form submitted',
-      message: `${result.record.name || 'Visitor'} was captured locally`,
-    });
-  };
-
-  const handleQueueTestNotification = () => {
-    const notification = appendEmailNotification({
-      title: 'Test email notification sent',
-      subtitle: 'Queued from the Inboxly dashboard',
-    });
-
-    addNotification({
-      type: 'info',
-      title: 'Notification queued',
-      message: notification.title,
-    });
-  };
-
   const closeSidebarMenu = () => setSidebarMenuOpen(false);
 
   const handleSidebarAction = (action) => {
     closeSidebarMenu();
     action?.();
+  };
+
+  const handleSignOut = () => {
+    closeSidebarMenu();
+    logout();
+    navigate('/login');
   };
 
   const handleSelectConversation = (conversation) => {
@@ -121,6 +102,10 @@ const ChatPage = () => {
     if (window.matchMedia('(max-width: 767px)').matches) {
       setSidebarOpen(false);
     }
+  };
+
+  const handleToggleVisitorPanel = () => {
+    setVisitorPanelOpen((current) => !current);
   };
 
   return (
@@ -158,7 +143,7 @@ const ChatPage = () => {
             <div className="relative">
               <div className={`absolute right-0 top-0 z-30 w-full rounded-[28px] border p-2 shadow-2xl ${isDark ? 'border-white/10 bg-gray-950' : 'border-gray-200 bg-white'}`}>
                 <div className="flex items-center justify-between px-3 py-2">
-                  <p className={`text-xs font-semibold uppercase tracking-[0.3em] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Actions</p>
+                  <p className={`text-xs font-semibold uppercase tracking-[0.3em] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Navigations</p>
                   <button
                     type="button"
                     onClick={closeSidebarMenu}
@@ -172,52 +157,27 @@ const ChatPage = () => {
                 <div className="space-y-1">
                   <button
                     type="button"
-                    onClick={() => handleSidebarAction(handleCreateConversation)}
-                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
-                  >
-                    <FiUserPlus size={15} />
-                    New conversation
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSidebarAction(() => navigate('/profile'))}
-                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
-                  >
-                    <FiUser size={15} />
-                    Profile
-                  </button>
-                  <button
-                    type="button"
                     onClick={() => handleSidebarAction(() => navigate('/admin'))}
                     className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
                   >
-                    <FiSettings size={15} />
-                    Admin
-                  </button>
-                  <div className={`my-2 h-px ${isDark ? 'bg-white/10' : 'bg-slate-200'}`} />
-                  <button
-                    type="button"
-                    onClick={() => handleSidebarAction(() => navigate('/admin'))}
-                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
-                  >
-                    <FiLayers size={15} />
+                    <FiHome size={15} />
                     Overview
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSidebarAction(() => navigate('/admin/widgets'))}
+                    onClick={() => handleSidebarAction(() => navigate('/chat'))}
                     className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
                   >
-                    <FiSettings size={15} />
-                    Widget setup
+                    <FiMessageSquare size={15} />
+                    Inbox
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSidebarAction(() => navigate('/admin/analytics'))}
+                    onClick={() => handleSidebarAction(() => navigate('/admin/visitors'))}
                     className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
                   >
-                    <FiBarChart2 size={15} />
-                    Analytics
+                    <FiUsers size={15} />
+                    Visitors
                   </button>
                   <button
                     type="button"
@@ -226,6 +186,31 @@ const ChatPage = () => {
                   >
                     <FiUsers size={15} />
                     Team
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSidebarAction(() => navigate('/admin/settings'))}
+                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
+                  >
+                    <FiTool size={15} />
+                    Settings
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSidebarAction(() => navigate('/admin/integrations'))}
+                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
+                  >
+                    <FiLink size={15} />
+                    Integrations
+                  </button>
+                  <div className={`my-2 h-px ${isDark ? 'bg-white/10' : 'bg-slate-200'}`} />
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-rose-300 hover:bg-rose-500/10' : 'text-rose-600 hover:bg-rose-50'}`}
+                  >
+                    <FiLogOut size={15} />
+                    Sign out
                   </button>
                 </div>
               </div>
@@ -249,6 +234,7 @@ const ChatPage = () => {
             <ChatWindow
               conversation={currentConversation}
               visitor={currentVisitor}
+              onToggleVisitorPanel={handleToggleVisitorPanel}
               onBackToConversations={() => setSidebarOpen(true)}
             />
           ) : (
@@ -266,19 +252,11 @@ const ChatPage = () => {
           )}
         </div>
 
-        <div className={`hidden xl:flex xl:w-96 flex-col overflow-y-auto ${isDark ? 'bg-gray-950 border-l border-gray-800' : 'bg-white border-l border-gray-200'}`}>
-          <ChatInsightsPanel
-            visitor={currentVisitor}
-            agent={mockSupportAgent}
-            widgetSettings={widgetSettings}
-            notifications={emailNotifications}
-            offlineContact={mockOfflineContact}
-            onSubmitOfflineForm={handleOfflineSubmit}
-            onQueueTestNotification={handleQueueTestNotification}
-            onUpdateWidgetSettings={updateWidgetSettings}
-            onResetDemo={resetDemoWorkspace}
-          />
-        </div>
+        {visitorPanelOpen ? (
+          <div className={`hidden xl:flex xl:w-96 flex-col overflow-y-auto ${isDark ? 'bg-gray-950 border-l border-gray-800' : 'bg-white border-l border-gray-200'}`}>
+            <ChatInsightsPanel visitor={currentVisitor} />
+          </div>
+        ) : null}
       </div>
     </div>
   );

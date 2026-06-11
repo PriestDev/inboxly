@@ -14,6 +14,9 @@ import SetupPage from './pages/SetupPage';
 import WidgetSettingsPage from './pages/WidgetSettingsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import TeamPage from './pages/TeamPage';
+import VisitorsPage from './pages/VisitorsPage';
+import SettingsPage from './pages/SettingsPage';
+import IntegrationsPage from './pages/IntegrationsPage';
 import NotificationCenter from './components/NotificationCenter';
 import SiteFooter from './components/SiteFooter';
 import './styles/index.css';
@@ -87,6 +90,18 @@ function App() {
           <Route
             path="/admin/team"
             element={token ? <TeamPage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/admin/visitors"
+            element={token ? <VisitorsPage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/admin/settings"
+            element={token ? <SettingsPage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/admin/integrations"
+            element={token ? <IntegrationsPage /> : <Navigate to="/login" />}
           />
           <Route
             path="/profile"

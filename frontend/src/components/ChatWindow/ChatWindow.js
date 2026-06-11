@@ -61,7 +61,7 @@ const getVisitorState = (visitor) => {
   };
 };
 
-const ChatWindow = ({ conversation, visitor, onBackToConversations }) => {
+const ChatWindow = ({ conversation, visitor, onBackToConversations, onToggleVisitorPanel }) => {
   const currentUser = useAuthStore((state) => state.user);
   const { messages, sendMessage, receiveMessage, markConversationRead, updateMessageStatus } = useDemoWorkspaceStore();
   const { isDark } = useThemeStore();
@@ -303,11 +303,7 @@ const ChatWindow = ({ conversation, visitor, onBackToConversations }) => {
 
   const handleViewVisitorInfo = () => {
     setIsMenuOpen(false);
-    addNotification({
-      type: 'info',
-      title: 'Visitor information',
-      message: visitor ? `${visitor.name} • ${visitor.company}` : 'Visitor details are available in the insights panel.',
-    });
+    onToggleVisitorPanel?.();
   };
 
   return (

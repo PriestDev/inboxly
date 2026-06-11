@@ -7,11 +7,11 @@ import OfflineIndicator from './OfflineIndicator';
 
 const dashboardNavItems = [
   { to: '/admin', label: 'Overview' },
-  { to: '/chat', label: 'Chats' },
-  { to: '/admin/widgets', label: 'Widget setup' },
-  { to: '/admin/analytics', label: 'Analytics' },
+  { to: '/chat', label: 'Inbox' },
+  { to: '/admin/visitors', label: 'Visitors' },
   { to: '/admin/team', label: 'Team' },
-  { to: '/setup', label: 'Setup guide' },
+  { to: '/admin/settings', label: 'Settings' },
+  { to: '/admin/integrations', label: 'Integrations' },
 ];
 
 const DashboardShell = ({ eyebrow, title, description, actions, children }) => {
