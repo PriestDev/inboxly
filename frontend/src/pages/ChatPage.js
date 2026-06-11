@@ -12,6 +12,11 @@ import OfflineIndicator from '../components/OfflineIndicator';
 import ChatInsightsPanel from '../components/Chat/ChatInsightsPanel';
 import { mockVisitors } from '../data/mockData';
 
+const DEMO_CURRENT_USER = {
+  _id: 'user1',
+  username: 'alicewonder',
+};
+
 const ChatPage = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -236,6 +241,7 @@ const ChatPage = () => {
               visitor={currentVisitor}
               onToggleVisitorPanel={handleToggleVisitorPanel}
               onBackToConversations={() => setSidebarOpen(true)}
+              currentUser={DEMO_CURRENT_USER}
             />
           ) : (
             <div className={`flex items-center justify-center h-full ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>

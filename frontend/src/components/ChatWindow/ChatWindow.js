@@ -32,6 +32,14 @@ const formatCompactTime = (dateValue) => {
   return `${diffDays}d`;
 };
 
+const isOutgoingSender = (message, currentUserId) => {
+  const senderId = message?.senderId?._id || message?.senderId?.id || message?.senderId;
+  const normalizedSenderId = senderId?.toString();
+  const normalizedCurrentUserId = currentUserId?.toString();
+
+  return normalizedSenderId === 'self' || normalizedSenderId === 'agent-demo' || normalizedCurrentUserId === normalizedSenderId;
+};
+
 const getVisitorState = (visitor) => {
   const status = visitor?.status || 'Offline';
 
@@ -61,8 +69,9 @@ const getVisitorState = (visitor) => {
   };
 };
 
-const ChatWindow = ({ conversation, visitor, onBackToConversations, onToggleVisitorPanel }) => {
-  const currentUser = useAuthStore((state) => state.user);
+const ChatWindow = ({ conversation, visitor, onBackToConversations, onToggleVisitorPanel, currentUser: currentUserProp }) => {
+  const authUser = useAuthStore((state) => state.user);
+  const currentUser = currentUserProp || authUser;
   const { messages, sendMessage, receiveMessage, markConversationRead, updateMessageStatus } = useDemoWorkspaceStore();
   const { isDark } = useThemeStore();
   const { addNotification } = useNotificationStore();
@@ -151,7 +160,7 @@ const ChatWindow = ({ conversation, visitor, onBackToConversations, onToggleVisi
     sendMessage({
       conversationId: conversation._id,
       content: composedContent,
-      senderId: currentUser?._id || 'agent-demo',
+      senderId: currentUser?._id || 'self',
       senderName,
     });
 
@@ -274,8 +283,7 @@ const ChatWindow = ({ conversation, visitor, onBackToConversations, onToggleVisi
       return null;
     }
 
-    const senderId = message.senderId?._id || message.senderId?.id || message.senderId;
-    const isMine = currentUser?._id?.toString() === senderId?.toString();
+    const isMine = isOutgoingSender(message, currentUser?._id);
 
     if (!isMine) {
       return null;
@@ -413,8 +421,7 @@ const ChatWindow = ({ conversation, visitor, onBackToConversations, onToggleVisi
           </div>
         ) : (
           conversationMessages.map((message) => {
-            const senderId = message.senderId?._id || message.senderId?.id || message.senderId;
-            const isMine = currentUser?._id?.toString() === senderId?.toString();
+            const isMine = isOutgoingSender(message, currentUser?._id);
             const senderName = isMine ? 'You' : (message.senderId?.username || message.senderName || 'Support');
 
             return (
