@@ -4,7 +4,7 @@ import DashboardShell, { DashboardActionLink } from '../components/DashboardShel
 import { useThemeStore } from '../context/themeContext';
 import { mockAdminStats, mockVisitors, mockWidgetSettings, mockEmailNotifications, mockOfflineContact, mockSupportAgent } from '../data/mockData';
 
-const AdminDashboard = () => {
+const ClientDashboard = () => {
   const { isDark } = useThemeStore();
 
   const statCards = [
@@ -19,7 +19,7 @@ const AdminDashboard = () => {
       eyebrow="Workspace overview"
       title="Run Inboxly from one polished control center"
       description="Track chat volume, review widget setup, monitor support capacity, and jump into the pages that keep the plugin connected and usable."
-      actions={<DashboardActionLink to="/admin/widgets">Widget setup</DashboardActionLink>}
+      actions={<DashboardActionLink to="/client/widgets">Widget setup</DashboardActionLink>}
     >
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {statCards.map((card) => {
@@ -46,7 +46,7 @@ const AdminDashboard = () => {
               <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>Performance trends</h2>
               <p className={`mt-1 text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>A concise view of growth, message volume, and engagement over time.</p>
             </div>
-            <DashboardActionLink to="/admin/analytics">Open analytics</DashboardActionLink>
+            <DashboardActionLink to="/client/analytics">Open analytics</DashboardActionLink>
           </div>
 
           <div className="mt-6 space-y-4">
@@ -86,7 +86,7 @@ const AdminDashboard = () => {
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <DashboardActionLink to="/admin/widgets" primary>
+            <DashboardActionLink to="/client/widgets" primary>
               Widget settings
             </DashboardActionLink>
             <DashboardActionLink to="/setup">
@@ -175,8 +175,8 @@ const AdminDashboard = () => {
             ))}
           </div>
           <div className="mt-6 flex flex-wrap gap-3">
-            <DashboardActionLink to="/admin/team">Team management</DashboardActionLink>
-            <DashboardActionLink to="/admin/analytics" primary>
+            <DashboardActionLink to="/client/team">Team management</DashboardActionLink>
+            <DashboardActionLink to="/client/analytics" primary>
               Review reports
             </DashboardActionLink>
           </div>
@@ -186,4 +186,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default ClientDashboard;

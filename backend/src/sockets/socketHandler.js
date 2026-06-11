@@ -91,7 +91,7 @@ const socketHandler = (io) => {
 
         if (recipientIds.size === 0) {
           conversation.participants
-            .filter((participant) => ['agent', 'admin'].includes(participant.role))
+            .filter((participant) => participant.role === 'admin')
             .forEach((participant) => {
               recipientIds.add(participant.userId.toString());
             });

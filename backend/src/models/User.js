@@ -1,9 +1,8 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const { generateAgentCode } = require('../utils/codeGenerator');
 
 const userSchema = new mongoose.Schema({
-  agentCode: {
+  widgetCode: {
     type: String,
     unique: true,
     sparse: true
@@ -32,7 +31,7 @@ const userSchema = new mongoose.Schema({
   avatar: String,
   userType: {
     type: String,
-    enum: ['admin', 'agent', 'client'],
+    enum: ['admin', 'client'],
     default: 'client'
   },
   status: {
@@ -59,25 +58,6 @@ const userSchema = new mongoose.Schema({
     default: Date.now
   }
 }, { timestamps: true });
-
-userSchema.pre('validate', async function (next) {
-  if (!this.isNew || this.agentCode) {
-    return next();
-  }
-
-  try {
-    let agentCode = await generateAgentCode();
-
-    while (await mongoose.models.User.findOne({ agentCode })) {
-      agentCode = await generateAgentCode();
-    }
-
-    this.agentCode = agentCode;
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {

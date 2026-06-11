@@ -11,7 +11,7 @@ const OfflineIndicator = ({ enableBackOnlineAlert = false }) => {
   const { addNotification } = useNotificationStore();
   const { pathname } = useLocation();
   const wasOnlineRef = useRef(isOnline);
-  const isDashboardRoute = pathname.startsWith('/admin');
+  const isDashboardRoute = pathname.startsWith('/client');
   const showDashboardAlert = enableBackOnlineAlert && isDashboardRoute;
 
   useEffect(() => {

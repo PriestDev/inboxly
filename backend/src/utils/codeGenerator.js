@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 
-const generateAgentCode = async (length = 8) => {
+const generateWidgetCode = async (length = 8) => {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const bytes = crypto.randomBytes(length);
 
@@ -8,5 +8,5 @@ const generateAgentCode = async (length = 8) => {
 };
 
 module.exports = {
-  generateAgentCode
+  generateWidgetCode
 };

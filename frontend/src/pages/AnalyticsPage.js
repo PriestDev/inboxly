@@ -19,7 +19,7 @@ const AnalyticsPage = () => {
       eyebrow="Analytics"
       title="Measure support performance with business-ready reporting"
       description="See what the widget is doing, how quickly agents respond, and where conversations are coming from."
-      actions={<DashboardActionLink to="/admin/widgets">Widget setup</DashboardActionLink>}
+      actions={<DashboardActionLink to="/client/widgets">Widget setup</DashboardActionLink>}
     >
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => {
@@ -120,8 +120,8 @@ const AnalyticsPage = () => {
             ))}
           </div>
           <div className="mt-6 flex flex-wrap gap-3">
-            <DashboardActionLink to="/admin/widgets">Widget setup</DashboardActionLink>
-            <DashboardActionLink to="/admin/team" primary>
+            <DashboardActionLink to="/client/widgets">Widget setup</DashboardActionLink>
+            <DashboardActionLink to="/client/team" primary>
               Team page
             </DashboardActionLink>
           </div>

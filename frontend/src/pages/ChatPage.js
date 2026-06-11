@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiX, FiUser, FiSettings, FiMoreVertical, FiUserPlus, FiHome, FiMessageSquare, FiUsers, FiTool, FiLink, FiLogOut } from 'react-icons/fi';
+import { FiX, FiMoreVertical, FiHome, FiMessageSquare, FiUsers, FiTool, FiLink, FiLogOut } from 'react-icons/fi';
 import { useDemoWorkspaceStore } from '../context/demoWorkspaceStore';
 import { useThemeStore } from '../context/themeContext';
 import { useNotificationStore } from '../context/notificationContext';
@@ -157,7 +157,7 @@ const ChatPage = () => {
                 <div className="space-y-1">
                   <button
                     type="button"
-                    onClick={() => handleSidebarAction(() => navigate('/admin'))}
+                    onClick={() => handleSidebarAction(() => navigate('/client'))}
                     className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
                   >
                     <FiHome size={15} />
@@ -173,7 +173,7 @@ const ChatPage = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSidebarAction(() => navigate('/admin/visitors'))}
+                    onClick={() => handleSidebarAction(() => navigate('/client/visitors'))}
                     className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
                   >
                     <FiUsers size={15} />
@@ -181,7 +181,7 @@ const ChatPage = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSidebarAction(() => navigate('/admin/team'))}
+                    onClick={() => handleSidebarAction(() => navigate('/client/team'))}
                     className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
                   >
                     <FiUsers size={15} />
@@ -189,7 +189,7 @@ const ChatPage = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSidebarAction(() => navigate('/admin/settings'))}
+                    onClick={() => handleSidebarAction(() => navigate('/client/settings'))}
                     className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
                   >
                     <FiTool size={15} />
@@ -197,7 +197,7 @@ const ChatPage = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSidebarAction(() => navigate('/admin/integrations'))}
+                    onClick={() => handleSidebarAction(() => navigate('/client/integrations'))}
                     className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition ${isDark ? 'text-slate-200 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-50'}`}
                   >
                     <FiLink size={15} />

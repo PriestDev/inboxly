@@ -31,7 +31,7 @@ const TeamPage = () => {
       eyebrow="Team management"
       title="Coordinate agents and support coverage with clarity"
       description="Use the team page to review who is assigned, who is online, and how support responsibilities are distributed."
-      actions={<DashboardActionLink to="/admin/widgets">Connection status</DashboardActionLink>}
+      actions={<DashboardActionLink to="/client/widgets">Connection status</DashboardActionLink>}
     >
       <div className="grid gap-6 lg:grid-cols-[1fr_0.95fr]">
         <section className={`rounded-3xl border p-6 shadow-sm ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white'}`}>
@@ -85,7 +85,7 @@ const TeamPage = () => {
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <DashboardActionLink to="/admin/widgets">Widget setup</DashboardActionLink>
+            <DashboardActionLink to="/client/widgets">Widget setup</DashboardActionLink>
             <DashboardActionLink to="/setup" primary>
               Setup guide
             </DashboardActionLink>

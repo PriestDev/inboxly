@@ -93,8 +93,8 @@ const WidgetSettingsPage = () => {
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <DashboardActionLink to="/admin/analytics">Analytics</DashboardActionLink>
-            <DashboardActionLink to="/admin/team" primary>
+            <DashboardActionLink to="/client/analytics">Analytics</DashboardActionLink>
+            <DashboardActionLink to="/client/team" primary>
               Team setup
             </DashboardActionLink>
             <button

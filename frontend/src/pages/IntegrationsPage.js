@@ -32,7 +32,7 @@ const IntegrationsPage = () => {
       eyebrow="Integrations"
       title="Connect Inboxly to the tools your team already uses"
       description="Keep the support widget, notifications, and delivery paths in sync with the rest of your workflow."
-      actions={<DashboardActionLink to="/admin/settings">Open settings</DashboardActionLink>}
+      actions={<DashboardActionLink to="/client/settings">Open settings</DashboardActionLink>}
     >
       <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
         <section className={`rounded-3xl border p-6 shadow-sm ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white'}`}>
@@ -77,7 +77,7 @@ const IntegrationsPage = () => {
 
           <div className="mt-6 flex flex-wrap gap-3">
             <DashboardActionLink to="/setup">Setup guide</DashboardActionLink>
-            <DashboardActionLink to="/admin/widgets" primary>
+            <DashboardActionLink to="/client/widgets" primary>
               Widget setup
             </DashboardActionLink>
           </div>

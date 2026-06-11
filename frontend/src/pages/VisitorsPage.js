@@ -62,8 +62,8 @@ const VisitorsPage = () => {
             })}
           </div>
           <div className="mt-6 flex flex-wrap gap-3">
-            <DashboardActionLink to="/admin/team">Team</DashboardActionLink>
-            <DashboardActionLink to="/admin/integrations" primary>
+            <DashboardActionLink to="/client/team">Team</DashboardActionLink>
+            <DashboardActionLink to="/client/integrations" primary>
               Integrations
             </DashboardActionLink>
           </div>

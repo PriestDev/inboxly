@@ -6,12 +6,12 @@ import ThemeToggle from './ThemeToggle';
 import OfflineIndicator from './OfflineIndicator';
 
 const dashboardNavItems = [
-  { to: '/admin', label: 'Overview' },
+  { to: '/client', label: 'Overview' },
   { to: '/chat', label: 'Inbox' },
-  { to: '/admin/visitors', label: 'Visitors' },
-  { to: '/admin/team', label: 'Team' },
-  { to: '/admin/settings', label: 'Settings' },
-  { to: '/admin/integrations', label: 'Integrations' },
+  { to: '/client/visitors', label: 'Visitors' },
+  { to: '/client/team', label: 'Team' },
+  { to: '/client/settings', label: 'Settings' },
+  { to: '/client/integrations', label: 'Integrations' },
 ];
 
 const DashboardShell = ({ eyebrow, title, description, actions, children }) => {

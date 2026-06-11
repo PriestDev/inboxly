@@ -4,6 +4,7 @@ const authenticate = require('../middleware/auth');
 const authorize = require('../middleware/authorize');
 
 const router = express.Router();
+const allowedUserTypes = ['admin', 'client'];
 
 // Get all users (admin only)
 router.get('/', authenticate, authorize(['admin']), async (req, res) => {
@@ -36,6 +37,9 @@ router.put('/:userId', authenticate, async (req, res) => {
     }
 
     const { firstName, lastName, avatar, userType } = req.body;
+    if (userType && !allowedUserTypes.includes(userType)) {
+      return res.status(400).json({ message: 'Invalid user type' });
+    }
     const user = await User.findByIdAndUpdate(
       req.params.userId,
       { firstName, lastName, avatar, userType },
@@ -71,6 +75,9 @@ router.patch('/:userId/status', authenticate, async (req, res) => {
 router.patch('/:userId/role', authenticate, authorize(['admin']), async (req, res) => {
   try {
     const { userType } = req.body;
+    if (!allowedUserTypes.includes(userType)) {
+      return res.status(400).json({ message: 'Invalid user type' });
+    }
     const user = await User.findByIdAndUpdate(
       req.params.userId,
       { userType },

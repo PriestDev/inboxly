@@ -5,11 +5,16 @@ const authenticate = require('../middleware/auth');
 const { sendEmail } = require('../utils/emailService');
 
 const router = express.Router();
+const allowedUserTypes = ['admin', 'client'];
 
 // Register
 router.post('/register', async (req, res) => {
   try {
     const { email, username, password, firstName, lastName, userType } = req.body;
+
+    if (userType && !allowedUserTypes.includes(userType)) {
+      return res.status(400).json({ message: 'Invalid user type' });
+    }
 
     // Check if user exists
     let user = await User.findOne({ email });

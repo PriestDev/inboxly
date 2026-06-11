@@ -7,7 +7,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ChatPage from './pages/ChatPage';
 import ProfilePage from './pages/ProfilePage';
-import AdminDashboard from './pages/AdminDashboard';
+import ClientDashboard from './pages/ClientDashboard';
 import LandingPage from './pages/LandingPage';
 import FeaturesPage from './pages/FeaturesPage';
 import SetupPage from './pages/SetupPage';
@@ -80,27 +80,27 @@ function App() {
             element={token ? <ChatPage /> : <Navigate to="/login" />}
           />
           <Route
-            path="/admin/widgets"
+            path="/client/widgets"
             element={token ? <WidgetSettingsPage /> : <Navigate to="/login" />}
           />
           <Route
-            path="/admin/analytics"
+            path="/client/analytics"
             element={token ? <AnalyticsPage /> : <Navigate to="/login" />}
           />
           <Route
-            path="/admin/team"
+            path="/client/team"
             element={token ? <TeamPage /> : <Navigate to="/login" />}
           />
           <Route
-            path="/admin/visitors"
+            path="/client/visitors"
             element={token ? <VisitorsPage /> : <Navigate to="/login" />}
           />
           <Route
-            path="/admin/settings"
+            path="/client/settings"
             element={token ? <SettingsPage /> : <Navigate to="/login" />}
           />
           <Route
-            path="/admin/integrations"
+            path="/client/integrations"
             element={token ? <IntegrationsPage /> : <Navigate to="/login" />}
           />
           <Route
@@ -108,8 +108,8 @@ function App() {
             element={token ? <ProfilePage /> : <Navigate to="/login" />}
           />
           <Route
-            path="/admin"
-            element={token ? <AdminDashboard /> : <Navigate to="/login" />}
+            path="/client"
+            element={token ? <ClientDashboard /> : <Navigate to="/login" />}
           />
           <Route
             path="/"

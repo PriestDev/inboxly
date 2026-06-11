@@ -10,11 +10,7 @@ const ensureParticipant = (conversation, userId) => {
   return conversation.participants.some(participant => participant.userId.toString() === userId);
 };
 
-const findDefaultAgent = async () => {
-  let agent = await User.findOne({ userType: 'agent', isActive: true }).sort({ lastActive: -1 });
-  if (agent) {
-    return agent;
-  }
+const findDefaultAdmin = async () => {
   return await User.findOne({ userType: 'admin', isActive: true }).sort({ lastActive: -1 });
 };
 
@@ -60,7 +56,7 @@ router.post('/', authenticate, async (req, res) => {
         if (participant.userId) {
           normalizedParticipants.push({
             userId: participant.userId,
-            role: participant.role || 'client'
+            role: participant.role === 'admin' ? 'admin' : 'client'
           });
         }
       });
@@ -70,7 +66,7 @@ router.post('/', authenticate, async (req, res) => {
       normalizedParticipants.push({ userId: req.userId, role: 'client' });
       participantIds
         .filter(id => id.toString() !== req.userId)
-        .forEach(id => normalizedParticipants.push({ userId: id, role: 'agent' }));
+        .forEach(id => normalizedParticipants.push({ userId: id, role: 'admin' }));
     }
 
     if (!normalizedParticipants.some(p => p.userId.toString() === req.userId)) {
@@ -78,19 +74,19 @@ router.post('/', authenticate, async (req, res) => {
     }
 
     const conversationType = ['direct', 'group', 'support'].includes(type) ? type : 'support';
-    const agentParticipants = normalizedParticipants.filter(p => p.role === 'agent');
-    let assignedAgent = agentParticipants.length > 0 ? agentParticipants[0].userId : null;
+    const adminParticipants = normalizedParticipants.filter(p => p.role === 'admin');
+    let assignedAgent = adminParticipants.length > 0 ? adminParticipants[0].userId : null;
 
     if (!assignedAgent && conversationType === 'support') {
-      const defaultAgent = await findDefaultAgent();
-      if (defaultAgent) {
-        normalizedParticipants.push({ userId: defaultAgent._id, role: 'agent' });
-        assignedAgent = defaultAgent._id;
+      const defaultAdmin = await findDefaultAdmin();
+      if (defaultAdmin) {
+        normalizedParticipants.push({ userId: defaultAdmin._id, role: 'admin' });
+        assignedAgent = defaultAdmin._id;
       }
     }
 
     const assignedAgentIds = normalizedParticipants
-      .filter(participant => participant.role === 'agent')
+      .filter(participant => participant.role === 'admin')
       .map(participant => participant.userId);
 
     const conversation = new Conversation({

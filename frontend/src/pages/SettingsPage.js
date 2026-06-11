@@ -19,7 +19,7 @@ const SettingsPage = () => {
       eyebrow="Settings"
       title="Keep the dashboard, widget, and alerts aligned"
       description="Use this page for account-level defaults, notification preferences, and the bits that keep the workspace consistent."
-      actions={<DashboardActionLink to="/admin/integrations">Manage integrations</DashboardActionLink>}
+      actions={<DashboardActionLink to="/client/integrations">Manage integrations</DashboardActionLink>}
     >
       <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
         <section className={`rounded-3xl border p-6 shadow-sm ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white'}`}>
@@ -59,7 +59,7 @@ const SettingsPage = () => {
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <DashboardActionLink to="/admin/widgets">Widget setup</DashboardActionLink>
+            <DashboardActionLink to="/client/widgets">Widget setup</DashboardActionLink>
             <DashboardActionLink to="/profile" primary>
               Profile
             </DashboardActionLink>
